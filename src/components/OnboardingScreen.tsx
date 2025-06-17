@@ -2,50 +2,75 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge, Calendar, User } from 'lucide-react';
+import { Badge, Camera, Wifi, Users, BarChart3 } from 'lucide-react';
 
 interface OnboardingScreenProps {
   onComplete: () => void;
+  onActivateEventMode: () => void;
 }
 
-const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
+const OnboardingScreen = ({ onComplete, onActivateEventMode }: OnboardingScreenProps) => {
   const [currentStep, setCurrentStep] = useState(0);
 
   const steps = [
     {
-      title: "Welcome to Wow Circle",
+      title: "Welcome to WOW Circle",
       subtitle: "Event Mode",
-      description: "The fastest way to capture and convert trade show leads",
+      description: "The AI-powered lead capture system that works offline and converts leads 3x faster.",
       icon: <Badge className="w-16 h-16 text-blue-600" />,
       features: [
-        "One-tap badge scanning",
-        "Works offline",
-        "Team collaboration",
-        "ROI tracking"
+        "AI Snap card recognition",
+        "Offline-first design",
+        "Auto follow-up emails",
+        "ROI tracking dashboard"
       ]
     },
     {
-      title: "Ready for Action",
-      subtitle: "Offline-First Design",
-      description: "Capture leads even with poor Wi-Fi. Everything syncs automatically when connected.",
-      icon: <Calendar className="w-16 h-16 text-green-600" />,
+      title: "AI Snap Technology",
+      subtitle: "Instant Lead Capture",
+      description: "Just snap a business card and watch AI extract all contact details instantly.",
+      icon: <Camera className="w-16 h-16 text-green-600" />,
       features: [
-        "Offline capture ready",
-        "Auto-sync when online",
-        "Voice notes supported",
-        "Quick tagging system"
+        "Camera-based card scanning",
+        "Auto-fill contact forms",
+        "Voice note integration", 
+        "Instant email drafting"
       ]
     },
     {
-      title: "Let's Get Started",
-      subtitle: "Time to Capture Leads",
-      description: "Ready to turn your next trade show into a lead generation machine?",
-      icon: <User className="w-16 h-16 text-purple-600" />,
+      title: "Offline Ready",
+      subtitle: "Never Miss a Lead",
+      description: "Capture leads even with poor Wi-Fi. Everything syncs when you're back online.",
+      icon: <Wifi className="w-16 h-16 text-purple-600" />,
       features: [
-        "24hr follow-up reminders",
-        "Email templates ready",
-        "Performance analytics",
-        "Export capabilities"
+        "Works without internet",
+        "Auto-sync when connected",
+        "Secure local storage",
+        "Progress indicators"
+      ]
+    },
+    {
+      title: "Team Collaboration",
+      subtitle: "Scale Your Success",
+      description: "Share leads with your team, track assignments, and collaborate in real-time.",
+      icon: <Users className="w-16 h-16 text-orange-600" />,
+      features: [
+        "Team lead sharing",
+        "Assignment tracking",
+        "Activity audit logs",
+        "Role-based access"
+      ]
+    },
+    {
+      title: "ROI Dashboard",
+      subtitle: "Prove Your Impact",
+      description: "Track conversions, measure event ROI, and generate reports for your manager.",
+      icon: <BarChart3 className="w-16 h-16 text-red-600" />,
+      features: [
+        "Conversion tracking",
+        "Event ROI analysis",
+        "Exportable reports",
+        "Pipeline visibility"
       ]
     }
   ];
@@ -54,11 +79,12 @@ const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
-      onComplete();
+      activateAndComplete();
     }
   };
 
-  const skip = () => {
+  const activateAndComplete = () => {
+    onActivateEventMode();
     onComplete();
   };
 
@@ -68,12 +94,12 @@ const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
     <div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-700 to-purple-800 flex flex-col items-center justify-center p-6">
       <div className="w-full max-w-sm">
         {/* Progress indicators */}
-        <div className="flex justify-center mb-8 space-x-2">
+        <div className="flex justify-center mb-8 space-x-1">
           {steps.map((_, index) => (
             <div
               key={index}
-              className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                index <= currentStep ? 'bg-white' : 'bg-white/30'
+              className={`h-2 rounded-full transition-all duration-300 ${
+                index <= currentStep ? 'bg-white w-8' : 'bg-white/30 w-2'
               }`}
             />
           ))}
@@ -92,7 +118,7 @@ const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
             <div className="space-y-3 mb-8">
               {currentStepData.features.map((feature, index) => (
                 <div key={index} className="flex items-center space-x-3 text-left">
-                  <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                  <div className="w-2 h-2 bg-green-400 rounded-full flex-shrink-0"></div>
                   <span className="text-white/90">{feature}</span>
                 </div>
               ))}
@@ -103,16 +129,16 @@ const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
                 onClick={nextStep}
                 className="w-full bg-white text-blue-700 hover:bg-white/90 font-semibold py-6 text-lg"
               >
-                {currentStep === steps.length - 1 ? "Start Capturing Leads" : "Continue"}
+                {currentStep === steps.length - 1 ? "Activate Event Mode" : "Continue"}
               </Button>
               
               {currentStep < steps.length - 1 && (
                 <Button
-                  onClick={skip}
+                  onClick={activateAndComplete}
                   variant="ghost"
                   className="w-full text-white/80 hover:text-white hover:bg-white/10"
                 >
-                  Skip Introduction
+                  Skip & Activate Event Mode
                 </Button>
               )}
             </div>
