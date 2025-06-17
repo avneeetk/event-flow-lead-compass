@@ -74,11 +74,11 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+    <div className="min-h-screen bg-slate-50">
       <div className="max-w-md mx-auto bg-white min-h-screen shadow-xl relative">
         {/* Event Mode Banner */}
         {isEventModeActive && (
-          <div className="bg-gradient-to-r from-green-500 to-green-600 text-white text-center py-2 text-sm font-medium">
+          <div className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white text-center py-2 text-sm font-medium">
             🟢 Event Mode Active - 3 days left in free trial
           </div>
         )}

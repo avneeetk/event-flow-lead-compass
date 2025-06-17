@@ -16,8 +16,8 @@ const OnboardingScreen = ({ onComplete, onActivateEventMode }: OnboardingScreenP
     {
       title: "Welcome to WOW Circle",
       subtitle: "Event Mode",
-      description: "The AI-powered lead capture system that works offline and converts leads 3x faster.",
-      icon: <Badge className="w-16 h-16 text-blue-600" />,
+      description: "The AI-powered contact capture system that works offline and converts connections 3x faster.",
+      icon: <Badge className="w-16 h-16 text-cyan-400" />,
       features: [
         "AI Snap card recognition",
         "Offline-first design",
@@ -27,9 +27,9 @@ const OnboardingScreen = ({ onComplete, onActivateEventMode }: OnboardingScreenP
     },
     {
       title: "AI Snap Technology",
-      subtitle: "Instant Lead Capture",
+      subtitle: "Instant Contact Capture",
       description: "Just snap a business card and watch AI extract all contact details instantly.",
-      icon: <Camera className="w-16 h-16 text-green-600" />,
+      icon: <Camera className="w-16 h-16 text-cyan-400" />,
       features: [
         "Camera-based card scanning",
         "Auto-fill contact forms",
@@ -39,9 +39,9 @@ const OnboardingScreen = ({ onComplete, onActivateEventMode }: OnboardingScreenP
     },
     {
       title: "Offline Ready",
-      subtitle: "Never Miss a Lead",
-      description: "Capture leads even with poor Wi-Fi. Everything syncs when you're back online.",
-      icon: <Wifi className="w-16 h-16 text-purple-600" />,
+      subtitle: "Never Miss a Contact",
+      description: "Capture contacts even with poor Wi-Fi. Everything syncs when you're back online.",
+      icon: <Wifi className="w-16 h-16 text-cyan-400" />,
       features: [
         "Works without internet",
         "Auto-sync when connected",
@@ -52,10 +52,10 @@ const OnboardingScreen = ({ onComplete, onActivateEventMode }: OnboardingScreenP
     {
       title: "Team Collaboration",
       subtitle: "Scale Your Success",
-      description: "Share leads with your team, track assignments, and collaborate in real-time.",
-      icon: <Users className="w-16 h-16 text-orange-600" />,
+      description: "Share contacts with your team, track assignments, and collaborate in real-time.",
+      icon: <Users className="w-16 h-16 text-cyan-400" />,
       features: [
-        "Team lead sharing",
+        "Team contact sharing",
         "Assignment tracking",
         "Activity audit logs",
         "Role-based access"
@@ -65,7 +65,7 @@ const OnboardingScreen = ({ onComplete, onActivateEventMode }: OnboardingScreenP
       title: "ROI Dashboard",
       subtitle: "Prove Your Impact",
       description: "Track conversions, measure event ROI, and generate reports for your manager.",
-      icon: <BarChart3 className="w-16 h-16 text-red-600" />,
+      icon: <BarChart3 className="w-16 h-16 text-cyan-400" />,
       features: [
         "Conversion tracking",
         "Event ROI analysis",
@@ -85,13 +85,15 @@ const OnboardingScreen = ({ onComplete, onActivateEventMode }: OnboardingScreenP
 
   const activateAndComplete = () => {
     onActivateEventMode();
+    // Set flag to show walkthrough on first app load
+    localStorage.setItem('showWalkthrough', 'true');
     onComplete();
   };
 
   const currentStepData = steps[currentStep];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-700 to-purple-800 flex flex-col items-center justify-center p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 flex flex-col items-center justify-center p-6">
       <div className="w-full max-w-sm">
         {/* Progress indicators */}
         <div className="flex justify-center mb-8 space-x-1">
@@ -99,7 +101,7 @@ const OnboardingScreen = ({ onComplete, onActivateEventMode }: OnboardingScreenP
             <div
               key={index}
               className={`h-2 rounded-full transition-all duration-300 ${
-                index <= currentStep ? 'bg-white w-8' : 'bg-white/30 w-2'
+                index <= currentStep ? 'bg-cyan-400 w-8' : 'bg-white/30 w-2'
               }`}
             />
           ))}
@@ -112,13 +114,13 @@ const OnboardingScreen = ({ onComplete, onActivateEventMode }: OnboardingScreenP
             </div>
             
             <h1 className="text-2xl font-bold mb-2">{currentStepData.title}</h1>
-            <p className="text-lg font-medium text-white/90 mb-4">{currentStepData.subtitle}</p>
+            <p className="text-lg font-medium text-cyan-300 mb-4">{currentStepData.subtitle}</p>
             <p className="text-white/80 mb-8 leading-relaxed">{currentStepData.description}</p>
 
             <div className="space-y-3 mb-8">
               {currentStepData.features.map((feature, index) => (
                 <div key={index} className="flex items-center space-x-3 text-left">
-                  <div className="w-2 h-2 bg-green-400 rounded-full flex-shrink-0"></div>
+                  <div className="w-2 h-2 bg-cyan-400 rounded-full flex-shrink-0"></div>
                   <span className="text-white/90">{feature}</span>
                 </div>
               ))}
@@ -127,7 +129,7 @@ const OnboardingScreen = ({ onComplete, onActivateEventMode }: OnboardingScreenP
             <div className="space-y-3">
               <Button
                 onClick={nextStep}
-                className="w-full bg-white text-blue-700 hover:bg-white/90 font-semibold py-6 text-lg"
+                className="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-900 hover:from-cyan-300 hover:to-blue-400 font-semibold py-6 text-lg"
               >
                 {currentStep === steps.length - 1 ? "Activate Event Mode" : "Continue"}
               </Button>

@@ -3,7 +3,6 @@ import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Camera, Upload, Loader2 } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
 
 interface AISnapCaptureProps {
   onCapture: (extractedData: any) => void;
@@ -66,7 +65,7 @@ const AISnapCapture = ({ onCapture }: AISnapCaptureProps) => {
 
   if (isProcessing) {
     return (
-      <Card className="bg-gradient-to-br from-blue-50 to-purple-50 border-blue-200">
+      <Card className="bg-gradient-to-br from-cyan-50 to-blue-50 border-cyan-200">
         <CardContent className="p-8 text-center">
           <div className="relative mb-6">
             {capturedImage && (
@@ -76,18 +75,18 @@ const AISnapCapture = ({ onCapture }: AISnapCaptureProps) => {
                 className="w-full h-32 object-cover rounded-lg"
               />
             )}
-            <div className="absolute inset-0 bg-blue-600/20 rounded-lg flex items-center justify-center">
-              <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+            <div className="absolute inset-0 bg-cyan-600/20 rounded-lg flex items-center justify-center">
+              <Loader2 className="w-8 h-8 text-cyan-600 animate-spin" />
             </div>
           </div>
           
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">AI Processing Card...</h3>
-          <p className="text-gray-600 mb-4">Extracting contact information</p>
+          <h3 className="text-lg font-semibold text-slate-800 mb-2">AI Processing Card...</h3>
+          <p className="text-slate-600 mb-4">Extracting contact information</p>
           
-          <div className="w-full bg-blue-200 rounded-full h-2">
-            <div className="bg-blue-600 h-2 rounded-full animate-pulse" style={{ width: '70%' }}></div>
+          <div className="w-full bg-cyan-200 rounded-full h-2">
+            <div className="bg-gradient-to-r from-cyan-400 to-blue-500 h-2 rounded-full animate-pulse" style={{ width: '70%' }}></div>
           </div>
-          <p className="text-sm text-gray-500 mt-2">95% confidence detected</p>
+          <p className="text-sm text-slate-500 mt-2">95% confidence detected</p>
         </CardContent>
       </Card>
     );
@@ -104,11 +103,11 @@ const AISnapCapture = ({ onCapture }: AISnapCaptureProps) => {
         capture="environment"
       />
       
-      <Card className="bg-gradient-to-br from-green-50 to-blue-50 border-green-200">
+      <Card className="bg-gradient-to-br from-cyan-50 to-blue-50 border-cyan-200">
         <CardContent className="p-6">
           <Button
             onClick={handleCameraClick}
-            className="w-full h-24 text-xl font-semibold bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 transition-all duration-300 transform hover:scale-105"
+            className="w-full h-24 text-xl font-semibold bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 transition-all duration-300 transform hover:scale-105"
           >
             <div className="flex items-center space-x-3">
               <Camera className="w-8 h-8" />
@@ -116,22 +115,22 @@ const AISnapCapture = ({ onCapture }: AISnapCaptureProps) => {
             </div>
           </Button>
           
-          <p className="text-gray-600 mt-3 text-center">
+          <p className="text-slate-600 mt-3 text-center">
             Point camera at business card for instant capture
           </p>
         </CardContent>
       </Card>
 
       <div className="flex items-center space-x-4">
-        <div className="flex-1 h-px bg-gray-300"></div>
-        <span className="text-gray-500 text-sm">or</span>
-        <div className="flex-1 h-px bg-gray-300"></div>
+        <div className="flex-1 h-px bg-slate-300"></div>
+        <span className="text-slate-500 text-sm">or</span>
+        <div className="flex-1 h-px bg-slate-300"></div>
       </div>
 
       <Button
         onClick={() => fileInputRef.current?.click()}
         variant="outline"
-        className="w-full h-16 flex items-center space-x-3"
+        className="w-full h-16 flex items-center space-x-3 border-slate-200 hover:border-cyan-300 hover:bg-cyan-50"
       >
         <Upload className="w-6 h-6" />
         <span>Upload from Gallery</span>

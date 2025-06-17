@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge, User, Building, Globe, Linkedin, Upload } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge, User, Building, Globe, Linkedin, Upload, Users } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 interface RegistrationScreenProps {
@@ -16,12 +17,21 @@ const RegistrationScreen = ({ onComplete }: RegistrationScreenProps) => {
     // Personal Info
     name: '',
     email: '',
+    phone: '',
     role: '',
     // Business Details
     company: '',
     website: '',
-    // Socials
+    industry: '',
+    primaryRole: '',
+    eventsPerYear: '',
+    teamSize: '',
+    leadingTeam: '',
+    addTeammatesNow: '',
+    // Preferences
     linkedin: '',
+    preferredCommunication: '',
+    hearAboutUs: '',
     // Optional
     brochure: null as File | null
   });
@@ -32,17 +42,22 @@ const RegistrationScreen = ({ onComplete }: RegistrationScreenProps) => {
     {
       title: "Personal Information",
       icon: <User className="w-6 h-6" />,
-      fields: ['name', 'email', 'role']
+      fields: ['name', 'email', 'phone', 'role']
     },
     {
       title: "Business Details", 
       icon: <Building className="w-6 h-6" />,
-      fields: ['company', 'website']
+      fields: ['company', 'website', 'industry', 'primaryRole', 'eventsPerYear']
+    },
+    {
+      title: "Team & Preferences",
+      icon: <Users className="w-6 h-6" />,
+      fields: ['teamSize', 'leadingTeam', 'preferredCommunication']
     },
     {
       title: "Social & Optional",
       icon: <Globe className="w-6 h-6" />,
-      fields: ['linkedin', 'brochure']
+      fields: ['linkedin', 'hearAboutUs', 'brochure']
     }
   ];
 
@@ -57,7 +72,7 @@ const RegistrationScreen = ({ onComplete }: RegistrationScreenProps) => {
   const isCurrentSectionValid = () => {
     const currentFields = sections[currentSection].fields;
     return currentFields.every(field => {
-      if (field === 'brochure' || field === 'linkedin' || field === 'website') return true; // Optional fields
+      if (['brochure', 'linkedin', 'website', 'hearAboutUs', 'addTeammatesNow'].includes(field)) return true;
       return formData[field as keyof typeof formData];
     });
   };
@@ -81,7 +96,7 @@ const RegistrationScreen = ({ onComplete }: RegistrationScreenProps) => {
   const currentSectionData = sections[currentSection];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-blue-800 flex flex-col items-center justify-center p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 flex flex-col items-center justify-center p-6">
       <div className="w-full max-w-sm">
         {/* Progress indicators */}
         <div className="flex justify-center mb-8 space-x-2">
@@ -89,7 +104,7 @@ const RegistrationScreen = ({ onComplete }: RegistrationScreenProps) => {
             <div
               key={index}
               className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                index <= currentSection ? 'bg-white' : 'bg-white/30'
+                index <= currentSection ? 'bg-cyan-400' : 'bg-white/30'
               }`}
             />
           ))}
@@ -98,7 +113,7 @@ const RegistrationScreen = ({ onComplete }: RegistrationScreenProps) => {
         <Card className="bg-white/10 backdrop-blur-lg border-white/20 text-white">
           <CardHeader>
             <div className="flex items-center space-x-3 mb-4">
-              <div className="p-2 bg-white/20 rounded-lg">
+              <div className="p-2 bg-cyan-400/20 rounded-lg">
                 {currentSectionData.icon}
               </div>
               <div>
@@ -134,7 +149,17 @@ const RegistrationScreen = ({ onComplete }: RegistrationScreenProps) => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="role" className="text-white/90">Your Role *</Label>
+                  <Label htmlFor="phone" className="text-white/90">Phone Number *</Label>
+                  <Input
+                    id="phone"
+                    placeholder="+91 98765 43210"
+                    value={formData.phone}
+                    onChange={(e) => handleInputChange('phone', e.target.value)}
+                    className="bg-white/10 border-white/30 text-white placeholder:text-white/50"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="role" className="text-white/90">Job Title *</Label>
                   <Input
                     id="role"
                     placeholder="Sales Lead, Business Development"
@@ -169,11 +194,100 @@ const RegistrationScreen = ({ onComplete }: RegistrationScreenProps) => {
                     className="bg-white/10 border-white/30 text-white placeholder:text-white/50"
                   />
                 </div>
+                <div className="space-y-2">
+                  <Label htmlFor="industry" className="text-white/90">Industry Type *</Label>
+                  <Select onValueChange={(value) => handleInputChange('industry', value)}>
+                    <SelectTrigger className="bg-white/10 border-white/30 text-white">
+                      <SelectValue placeholder="Select industry" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pharmaceuticals">Pharmaceuticals</SelectItem>
+                      <SelectItem value="healthcare">Healthcare</SelectItem>
+                      <SelectItem value="b2b-saas">B2B SaaS</SelectItem>
+                      <SelectItem value="education">Education</SelectItem>
+                      <SelectItem value="manufacturing">Manufacturing</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="primaryRole" className="text-white/90">Primary Role at Events *</Label>
+                  <Select onValueChange={(value) => handleInputChange('primaryRole', value)}>
+                    <SelectTrigger className="bg-white/10 border-white/30 text-white">
+                      <SelectValue placeholder="Select role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="exhibitor">Exhibitor</SelectItem>
+                      <SelectItem value="visitor">Visitor</SelectItem>
+                      <SelectItem value="buyer">Buyer</SelectItem>
+                      <SelectItem value="speaker">Speaker</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="eventsPerYear" className="text-white/90">Events Attended Annually *</Label>
+                  <Select onValueChange={(value) => handleInputChange('eventsPerYear', value)}>
+                    <SelectTrigger className="bg-white/10 border-white/30 text-white">
+                      <SelectValue placeholder="Select range" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1-3">1-3 events</SelectItem>
+                      <SelectItem value="4-8">4-8 events</SelectItem>
+                      <SelectItem value="9-15">9-15 events</SelectItem>
+                      <SelectItem value="15+">15+ events</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </>
+            )}
+
+            {/* Team & Preferences */}
+            {currentSection === 2 && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="teamSize" className="text-white/90">Team Size *</Label>
+                  <Select onValueChange={(value) => handleInputChange('teamSize', value)}>
+                    <SelectTrigger className="bg-white/10 border-white/30 text-white">
+                      <SelectValue placeholder="Select team size" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="just-me">Just me</SelectItem>
+                      <SelectItem value="2-5">2-5 people</SelectItem>
+                      <SelectItem value="6-15">6-15 people</SelectItem>
+                      <SelectItem value="15+">15+ people</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="leadingTeam" className="text-white/90">Are you leading a team? *</Label>
+                  <Select onValueChange={(value) => handleInputChange('leadingTeam', value)}>
+                    <SelectTrigger className="bg-white/10 border-white/30 text-white">
+                      <SelectValue placeholder="Select option" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="yes">Yes, I'm a team lead</SelectItem>
+                      <SelectItem value="no">No, I'm an individual contributor</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="preferredCommunication" className="text-white/90">Preferred Communication *</Label>
+                  <Select onValueChange={(value) => handleInputChange('preferredCommunication', value)}>
+                    <SelectTrigger className="bg-white/10 border-white/30 text-white">
+                      <SelectValue placeholder="Select preference" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="email">Email</SelectItem>
+                      <SelectItem value="whatsapp">WhatsApp</SelectItem>
+                      <SelectItem value="both">Both</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </>
             )}
 
             {/* Social & Optional */}
-            {currentSection === 2 && (
+            {currentSection === 3 && (
               <>
                 <div className="space-y-2">
                   <Label htmlFor="linkedin" className="text-white/90 flex items-center space-x-2">
@@ -187,6 +301,21 @@ const RegistrationScreen = ({ onComplete }: RegistrationScreenProps) => {
                     onChange={(e) => handleInputChange('linkedin', e.target.value)}
                     className="bg-white/10 border-white/30 text-white placeholder:text-white/50"
                   />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="hearAboutUs" className="text-white/90">How did you hear about WOW Circle?</Label>
+                  <Select onValueChange={(value) => handleInputChange('hearAboutUs', value)}>
+                    <SelectTrigger className="bg-white/10 border-white/30 text-white">
+                      <SelectValue placeholder="Select source" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="linkedin">LinkedIn</SelectItem>
+                      <SelectItem value="colleague">Colleague referral</SelectItem>
+                      <SelectItem value="event">At an event</SelectItem>
+                      <SelectItem value="search">Google search</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label className="text-white/90 flex items-center space-x-2">
@@ -215,7 +344,7 @@ const RegistrationScreen = ({ onComplete }: RegistrationScreenProps) => {
               <Button
                 onClick={nextSection}
                 disabled={!isCurrentSectionValid()}
-                className="w-full bg-white text-blue-700 hover:bg-white/90 font-semibold py-6 text-lg"
+                className="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-900 hover:from-cyan-300 hover:to-blue-400 font-semibold py-6 text-lg"
               >
                 {currentSection === sections.length - 1 ? "Enter Event Mode" : "Continue"}
               </Button>
