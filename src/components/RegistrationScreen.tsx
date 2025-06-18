@@ -4,359 +4,519 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge, User, Building, Globe, Linkedin, Upload, Users } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge, Upload, Eye, EyeOff } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 interface RegistrationScreenProps {
   onComplete: (userData: any) => void;
+  onSwitchToLogin: () => void;
 }
 
-const RegistrationScreen = ({ onComplete }: RegistrationScreenProps) => {
+const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenProps) => {
+  const [currentStep, setCurrentStep] = useState(0);
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     // Personal Info
-    name: '',
+    fullName: '',
     email: '',
+    password: '',
     phone: '',
-    role: '',
+    
     // Business Details
-    company: '',
+    companyName: '',
+    businessEmail: '',
+    jobTitle: '',
+    location: '',
     website: '',
-    industry: '',
     primaryRole: '',
-    eventsPerYear: '',
-    teamSize: '',
-    leadingTeam: '',
-    addTeammatesNow: '',
-    // Preferences
-    linkedin: '',
-    preferredCommunication: '',
-    hearAboutUs: '',
-    // Optional
-    brochure: null as File | null
+    industryType: '',
+    eventsPerYear: '1-5',
+    
+    // Team & Preferences
+    teamSize: '1',
+    isTeamLead: false,
+    addTeammates: false,
+    preferredComm: 'email',
+    
+    // Social & Optional
+    linkedinProfile: '',
+    instagram: '',
+    whatsappBusiness: '',
+    twitter: '',
+    companyBrochure: null as File | null,
+    hearAboutUs: ''
   });
 
-  const [currentSection, setCurrentSection] = useState(0);
-
-  const sections = [
+  const steps = [
     {
       title: "Personal Information",
-      icon: <User className="w-6 h-6" />,
-      fields: ['name', 'email', 'phone', 'role']
+      subtitle: "Let's start with your basic details",
+      fields: ['fullName', 'email', 'password', 'phone']
     },
     {
-      title: "Business Details", 
-      icon: <Building className="w-6 h-6" />,
-      fields: ['company', 'website', 'industry', 'primaryRole', 'eventsPerYear']
+      title: "Business Details",
+      subtitle: "Tell us about your business",
+      fields: ['companyName', 'businessEmail', 'jobTitle', 'location', 'website', 'primaryRole', 'industryType', 'eventsPerYear']
     },
     {
       title: "Team & Preferences",
-      icon: <Users className="w-6 h-6" />,
-      fields: ['teamSize', 'leadingTeam', 'preferredCommunication']
+      subtitle: "How do you work with your team?",
+      fields: ['teamSize', 'isTeamLead', 'addTeammates', 'preferredComm']
     },
     {
       title: "Social & Optional",
-      icon: <Globe className="w-6 h-6" />,
-      fields: ['linkedin', 'hearAboutUs', 'brochure']
+      subtitle: "Connect your social presence (optional)",
+      fields: ['linkedinProfile', 'instagram', 'whatsappBusiness', 'twitter', 'companyBrochure', 'hearAboutUs']
     }
   ];
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleFileUpload = (file: File | null) => {
-    setFormData(prev => ({ ...prev, brochure: file }));
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleInputChange('companyBrochure', file);
+      toast({
+        title: "File Uploaded",
+        description: `${file.name} has been uploaded successfully`
+      });
+    }
   };
 
-  const isCurrentSectionValid = () => {
-    const currentFields = sections[currentSection].fields;
-    return currentFields.every(field => {
-      if (['brochure', 'linkedin', 'website', 'hearAboutUs', 'addTeammatesNow'].includes(field)) return true;
-      return formData[field as keyof typeof formData];
+  const validateStep = () => {
+    const currentStepData = steps[currentStep];
+    const requiredFields = currentStepData.fields.filter(field => {
+      // Define required fields per step
+      if (currentStep === 0) return ['fullName', 'email', 'password'].includes(field);
+      if (currentStep === 1) return ['companyName', 'businessEmail', 'jobTitle'].includes(field);
+      return false;
     });
+
+    const missingFields = requiredFields.filter(field => !formData[field as keyof typeof formData]);
+    
+    if (missingFields.length > 0) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields before continuing",
+        variant: "destructive"
+      });
+      return false;
+    }
+    return true;
   };
 
-  const nextSection = () => {
-    if (currentSection < sections.length - 1) {
-      setCurrentSection(currentSection + 1);
-    } else {
-      completeRegistration();
+  const nextStep = () => {
+    if (validateStep()) {
+      if (currentStep < steps.length - 1) {
+        setCurrentStep(currentStep + 1);
+      } else {
+        completeRegistration();
+      }
     }
   };
 
   const completeRegistration = () => {
+    const userData = {
+      ...formData,
+      registeredAt: new Date().toISOString(),
+      id: Date.now()
+    };
+
     toast({
       title: "Registration Complete!",
-      description: "Welcome to WOW Circle. Let's set up your event mode.",
+      description: "Welcome to WOW Circle. Let's get you started!"
     });
-    onComplete(formData);
+
+    onComplete(userData);
   };
 
-  const currentSectionData = sections[currentSection];
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case 0:
+        return (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="fullName">Full Name *</Label>
+              <Input
+                id="fullName"
+                value={formData.fullName}
+                onChange={(e) => handleInputChange('fullName', e.target.value)}
+                placeholder="Your full name"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="email">Email Address *</Label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => handleInputChange('email', e.target.value)}
+                placeholder="your@email.com"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="password">Password *</Label>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  value={formData.password}
+                  onChange={(e) => handleInputChange('password', e.target.value)}
+                  placeholder="Create a secure password"
+                  className="pr-10"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </Button>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="phone">Phone Number</Label>
+              <Input
+                id="phone"
+                value={formData.phone}
+                onChange={(e) => handleInputChange('phone', e.target.value)}
+                placeholder="+91 xxxxx xxxxx"
+              />
+            </div>
+          </div>
+        );
+
+      case 1:
+        return (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="companyName">Company Name *</Label>
+              <Input
+                id="companyName"
+                value={formData.companyName}
+                onChange={(e) => handleInputChange('companyName', e.target.value)}
+                placeholder="Your company name"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="businessEmail">Business Email *</Label>
+              <Input
+                id="businessEmail"
+                type="email"
+                value={formData.businessEmail}
+                onChange={(e) => handleInputChange('businessEmail', e.target.value)}
+                placeholder="business@company.com"
+              />
+              <p className="text-xs text-gray-500">This will be used for sending follow-up emails</p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="jobTitle">Job Title *</Label>
+                <Input
+                  id="jobTitle"
+                  value={formData.jobTitle}
+                  onChange={(e) => handleInputChange('jobTitle', e.target.value)}
+                  placeholder="Your role"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="location">Location</Label>
+                <Input
+                  id="location"
+                  value={formData.location}
+                  onChange={(e) => handleInputChange('location', e.target.value)}
+                  placeholder="City, Country"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="website">Company Website</Label>
+              <Input
+                id="website"
+                value={formData.website}
+                onChange={(e) => handleInputChange('website', e.target.value)}
+                placeholder="https://yourcompany.com"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="primaryRole">Primary Role at Events</Label>
+                <select
+                  id="primaryRole"
+                  value={formData.primaryRole}
+                  onChange={(e) => handleInputChange('primaryRole', e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                >
+                  <option value="">Select role</option>
+                  <option value="exhibitor">Exhibitor</option>
+                  <option value="visitor">Visitor</option>
+                  <option value="buyer">Buyer</option>
+                  <option value="speaker">Speaker</option>
+                  <option value="sponsor">Sponsor</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="industryType">Industry Type</Label>
+                <select
+                  id="industryType"
+                  value={formData.industryType}
+                  onChange={(e) => handleInputChange('industryType', e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                >
+                  <option value="">Select industry</option>
+                  <option value="pharmaceuticals">Pharmaceuticals</option>
+                  <option value="healthcare">Healthcare</option>
+                  <option value="b2b-saas">B2B SaaS</option>
+                  <option value="education">Education</option>
+                  <option value="fintech">FinTech</option>
+                  <option value="manufacturing">Manufacturing</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="eventsPerYear">Events Attended Annually</Label>
+              <select
+                id="eventsPerYear"
+                value={formData.eventsPerYear}
+                onChange={(e) => handleInputChange('eventsPerYear', e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-md"
+              >
+                <option value="1-5">1-5 events</option>
+                <option value="6-15">6-15 events</option>
+                <option value="16-30">16-30 events</option>
+                <option value="30+">30+ events</option>
+              </select>
+            </div>
+          </div>
+        );
+
+      case 2:
+        return (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="teamSize">Team Size</Label>
+                <select
+                  id="teamSize"
+                  value={formData.teamSize}
+                  onChange={(e) => handleInputChange('teamSize', e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                >
+                  <option value="1">Just me</option>
+                  <option value="2-5">2-5 people</option>
+                  <option value="6-15">6-15 people</option>
+                  <option value="16+">16+ people</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="preferredComm">Preferred Communication</Label>
+                <select
+                  id="preferredComm"
+                  value={formData.preferredComm}
+                  onChange={(e) => handleInputChange('preferredComm', e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                >
+                  <option value="email">Email</option>
+                  <option value="whatsapp">WhatsApp</option>
+                  <option value="both">Both</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="isTeamLead"
+                  checked={formData.isTeamLead}
+                  onChange={(e) => handleInputChange('isTeamLead', e.target.checked)}
+                  className="rounded"
+                />
+                <Label htmlFor="isTeamLead">I lead a team at events</Label>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="addTeammates"
+                  checked={formData.addTeammates}
+                  onChange={(e) => handleInputChange('addTeammates', e.target.checked)}
+                  className="rounded"
+                />
+                <Label htmlFor="addTeammates">I want to add teammates now</Label>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 3:
+        return (
+          <div className="space-y-4">
+            <p className="text-sm text-gray-600 mb-4">Connect your social profiles (all optional)</p>
+            
+            <div className="space-y-3">
+              <div className="space-y-2">
+                <Label htmlFor="linkedinProfile">LinkedIn Profile</Label>
+                <Input
+                  id="linkedinProfile"
+                  value={formData.linkedinProfile}
+                  onChange={(e) => handleInputChange('linkedinProfile', e.target.value)}
+                  placeholder="https://linkedin.com/in/yourname"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="instagram">Instagram</Label>
+                <Input
+                  id="instagram"
+                  value={formData.instagram}
+                  onChange={(e) => handleInputChange('instagram', e.target.value)}
+                  placeholder="@yourusername"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="whatsappBusiness">WhatsApp Business</Label>
+                <Input
+                  id="whatsappBusiness"
+                  value={formData.whatsappBusiness}
+                  onChange={(e) => handleInputChange('whatsappBusiness', e.target.value)}
+                  placeholder="+91 xxxxx xxxxx"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="twitter">X/Twitter</Label>
+                <Input
+                  id="twitter"
+                  value={formData.twitter}
+                  onChange={(e) => handleInputChange('twitter', e.target.value)}
+                  placeholder="@yourusername"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="companyBrochure">Company Brochure/Deck (Optional)</Label>
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                <input
+                  type="file"
+                  id="companyBrochure"
+                  onChange={handleFileUpload}
+                  accept=".pdf,.ppt,.pptx,.doc,.docx"
+                  className="hidden"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => document.getElementById('companyBrochure')?.click()}
+                  className="w-full"
+                >
+                  <Upload className="w-4 h-4 mr-2" />
+                  {formData.companyBrochure ? formData.companyBrochure.name : 'Upload File'}
+                </Button>
+                <p className="text-xs text-gray-500 mt-2">PDF, PPT, DOC files up to 10MB</p>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="hearAboutUs">How did you hear about WOW Circle?</Label>
+              <select
+                id="hearAboutUs"
+                value={formData.hearAboutUs}
+                onChange={(e) => handleInputChange('hearAboutUs', e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-md"
+              >
+                <option value="">Select source</option>
+                <option value="google">Google Search</option>
+                <option value="linkedin">LinkedIn</option>
+                <option value="referral">Friend/Colleague Referral</option>
+                <option value="event">At an event</option>
+                <option value="social">Social Media</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 flex flex-col items-center justify-center p-6">
       <div className="w-full max-w-sm">
         {/* Progress indicators */}
-        <div className="flex justify-center mb-8 space-x-2">
-          {sections.map((_, index) => (
+        <div className="flex justify-center mb-8 space-x-1">
+          {steps.map((_, index) => (
             <div
               key={index}
-              className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                index <= currentSection ? 'bg-cyan-400' : 'bg-white/30'
+              className={`h-2 rounded-full transition-all duration-300 ${
+                index <= currentStep ? 'bg-cyan-400 w-8' : 'bg-white/30 w-2'
               }`}
             />
           ))}
         </div>
 
         <Card className="bg-white/10 backdrop-blur-lg border-white/20 text-white">
-          <CardHeader>
-            <div className="flex items-center space-x-3 mb-4">
-              <div className="p-2 bg-cyan-400/20 rounded-lg">
-                {currentSectionData.icon}
-              </div>
-              <div>
-                <CardTitle className="text-xl">{currentSectionData.title}</CardTitle>
-                <p className="text-white/80 text-sm">Step {currentSection + 1} of {sections.length}</p>
-              </div>
+          <CardHeader className="text-center">
+            <div className="flex items-center justify-center mb-4">
+              <Badge className="w-16 h-16 text-cyan-400 bg-white/10 backdrop-blur-sm border-white/20" />
             </div>
+            <CardTitle className="text-xl">{steps[currentStep].title}</CardTitle>
+            <p className="text-white/80 text-sm">{steps[currentStep].subtitle}</p>
+            <p className="text-white/60 text-xs">Step {currentStep + 1} of {steps.length}</p>
           </CardHeader>
           
-          <CardContent className="space-y-4">
-            {/* Personal Information */}
-            {currentSection === 0 && (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="name" className="text-white/90">Full Name *</Label>
-                  <Input
-                    id="name"
-                    placeholder="Sarah Verma"
-                    value={formData.name}
-                    onChange={(e) => handleInputChange('name', e.target.value)}
-                    className="bg-white/10 border-white/30 text-white placeholder:text-white/50"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-white/90">Email Address *</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="sarah@pharmatech.com"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
-                    className="bg-white/10 border-white/30 text-white placeholder:text-white/50"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phone" className="text-white/90">Phone Number *</Label>
-                  <Input
-                    id="phone"
-                    placeholder="+91 98765 43210"
-                    value={formData.phone}
-                    onChange={(e) => handleInputChange('phone', e.target.value)}
-                    className="bg-white/10 border-white/30 text-white placeholder:text-white/50"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="role" className="text-white/90">Job Title *</Label>
-                  <Input
-                    id="role"
-                    placeholder="Sales Lead, Business Development"
-                    value={formData.role}
-                    onChange={(e) => handleInputChange('role', e.target.value)}
-                    className="bg-white/10 border-white/30 text-white placeholder:text-white/50"
-                  />
-                </div>
-              </>
-            )}
+          <CardContent className="space-y-6">
+            {renderStepContent()}
 
-            {/* Business Details */}
-            {currentSection === 1 && (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="company" className="text-white/90">Company Name *</Label>
-                  <Input
-                    id="company"
-                    placeholder="PharmaTech Solutions"
-                    value={formData.company}
-                    onChange={(e) => handleInputChange('company', e.target.value)}
-                    className="bg-white/10 border-white/30 text-white placeholder:text-white/50"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="website" className="text-white/90">Company Website</Label>
-                  <Input
-                    id="website"
-                    placeholder="https://pharmatech.com"
-                    value={formData.website}
-                    onChange={(e) => handleInputChange('website', e.target.value)}
-                    className="bg-white/10 border-white/30 text-white placeholder:text-white/50"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="industry" className="text-white/90">Industry Type *</Label>
-                  <Select onValueChange={(value) => handleInputChange('industry', value)}>
-                    <SelectTrigger className="bg-white/10 border-white/30 text-white">
-                      <SelectValue placeholder="Select industry" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pharmaceuticals">Pharmaceuticals</SelectItem>
-                      <SelectItem value="healthcare">Healthcare</SelectItem>
-                      <SelectItem value="b2b-saas">B2B SaaS</SelectItem>
-                      <SelectItem value="education">Education</SelectItem>
-                      <SelectItem value="manufacturing">Manufacturing</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="primaryRole" className="text-white/90">Primary Role at Events *</Label>
-                  <Select onValueChange={(value) => handleInputChange('primaryRole', value)}>
-                    <SelectTrigger className="bg-white/10 border-white/30 text-white">
-                      <SelectValue placeholder="Select role" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="exhibitor">Exhibitor</SelectItem>
-                      <SelectItem value="visitor">Visitor</SelectItem>
-                      <SelectItem value="buyer">Buyer</SelectItem>
-                      <SelectItem value="speaker">Speaker</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="eventsPerYear" className="text-white/90">Events Attended Annually *</Label>
-                  <Select onValueChange={(value) => handleInputChange('eventsPerYear', value)}>
-                    <SelectTrigger className="bg-white/10 border-white/30 text-white">
-                      <SelectValue placeholder="Select range" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1-3">1-3 events</SelectItem>
-                      <SelectItem value="4-8">4-8 events</SelectItem>
-                      <SelectItem value="9-15">9-15 events</SelectItem>
-                      <SelectItem value="15+">15+ events</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </>
-            )}
-
-            {/* Team & Preferences */}
-            {currentSection === 2 && (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="teamSize" className="text-white/90">Team Size *</Label>
-                  <Select onValueChange={(value) => handleInputChange('teamSize', value)}>
-                    <SelectTrigger className="bg-white/10 border-white/30 text-white">
-                      <SelectValue placeholder="Select team size" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="just-me">Just me</SelectItem>
-                      <SelectItem value="2-5">2-5 people</SelectItem>
-                      <SelectItem value="6-15">6-15 people</SelectItem>
-                      <SelectItem value="15+">15+ people</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="leadingTeam" className="text-white/90">Are you leading a team? *</Label>
-                  <Select onValueChange={(value) => handleInputChange('leadingTeam', value)}>
-                    <SelectTrigger className="bg-white/10 border-white/30 text-white">
-                      <SelectValue placeholder="Select option" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="yes">Yes, I'm a team lead</SelectItem>
-                      <SelectItem value="no">No, I'm an individual contributor</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="preferredCommunication" className="text-white/90">Preferred Communication *</Label>
-                  <Select onValueChange={(value) => handleInputChange('preferredCommunication', value)}>
-                    <SelectTrigger className="bg-white/10 border-white/30 text-white">
-                      <SelectValue placeholder="Select preference" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="email">Email</SelectItem>
-                      <SelectItem value="whatsapp">WhatsApp</SelectItem>
-                      <SelectItem value="both">Both</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </>
-            )}
-
-            {/* Social & Optional */}
-            {currentSection === 3 && (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="linkedin" className="text-white/90 flex items-center space-x-2">
-                    <Linkedin className="w-4 h-4" />
-                    <span>LinkedIn Profile</span>
-                  </Label>
-                  <Input
-                    id="linkedin"
-                    placeholder="https://linkedin.com/in/sarahverma"
-                    value={formData.linkedin}
-                    onChange={(e) => handleInputChange('linkedin', e.target.value)}
-                    className="bg-white/10 border-white/30 text-white placeholder:text-white/50"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="hearAboutUs" className="text-white/90">How did you hear about WOW Circle?</Label>
-                  <Select onValueChange={(value) => handleInputChange('hearAboutUs', value)}>
-                    <SelectTrigger className="bg-white/10 border-white/30 text-white">
-                      <SelectValue placeholder="Select source" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="linkedin">LinkedIn</SelectItem>
-                      <SelectItem value="colleague">Colleague referral</SelectItem>
-                      <SelectItem value="event">At an event</SelectItem>
-                      <SelectItem value="search">Google search</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-white/90 flex items-center space-x-2">
-                    <Upload className="w-4 h-4" />
-                    <span>Company Brochure (Optional)</span>
-                  </Label>
-                  <div className="relative">
-                    <input
-                      type="file"
-                      accept=".pdf,.doc,.docx"
-                      onChange={(e) => handleFileUpload(e.target.files?.[0] || null)}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                    />
-                    <div className="bg-white/10 border-white/30 border-2 border-dashed rounded-lg p-4 text-center">
-                      <Upload className="w-6 h-6 mx-auto mb-2 text-white/70" />
-                      <p className="text-white/70 text-sm">
-                        {formData.brochure ? formData.brochure.name : "Tap to upload PDF or DOC"}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </>
-            )}
-
-            <div className="pt-4 space-y-3">
+            <div className="space-y-3 pt-4">
               <Button
-                onClick={nextSection}
-                disabled={!isCurrentSectionValid()}
+                onClick={nextStep}
                 className="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-900 hover:from-cyan-300 hover:to-blue-400 font-semibold py-6 text-lg"
               >
-                {currentSection === sections.length - 1 ? "Enter Event Mode" : "Continue"}
+                {currentStep === steps.length - 1 ? "Complete Registration" : "Continue"}
               </Button>
               
-              {currentSection > 0 && (
+              {currentStep > 0 && (
                 <Button
-                  onClick={() => setCurrentSection(currentSection - 1)}
+                  onClick={() => setCurrentStep(currentStep - 1)}
                   variant="ghost"
                   className="w-full text-white/80 hover:text-white hover:bg-white/10"
                 >
                   Back
                 </Button>
+              )}
+
+              {currentStep === 0 && (
+                <div className="text-center">
+                  <p className="text-white/80 text-sm">
+                    Already have an account?{' '}
+                    <Button
+                      variant="link"
+                      onClick={onSwitchToLogin}
+                      className="text-cyan-300 hover:text-cyan-200 p-0 h-auto font-semibold"
+                    >
+                      Sign In
+                    </Button>
+                  </p>
+                </div>
               )}
             </div>
           </CardContent>
