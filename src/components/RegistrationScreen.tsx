@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -139,28 +138,30 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
         return (
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="fullName">Full Name *</Label>
+              <Label htmlFor="fullName" className="text-white/90">Full Name *</Label>
               <Input
                 id="fullName"
                 value={formData.fullName}
                 onChange={(e) => handleInputChange('fullName', e.target.value)}
                 placeholder="Your full name"
+                className="bg-white/20 border-white/30 text-white placeholder:text-white/60 focus:bg-white/30 focus:border-white/50"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email Address *</Label>
+              <Label htmlFor="email" className="text-white/90">Email Address *</Label>
               <Input
                 id="email"
                 type="email"
                 value={formData.email}
                 onChange={(e) => handleInputChange('email', e.target.value)}
                 placeholder="your@email.com"
+                className="bg-white/20 border-white/30 text-white placeholder:text-white/60 focus:bg-white/30 focus:border-white/50"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Password *</Label>
+              <Label htmlFor="password" className="text-white/90">Password *</Label>
               <div className="relative">
                 <Input
                   id="password"
@@ -168,13 +169,13 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
                   value={formData.password}
                   onChange={(e) => handleInputChange('password', e.target.value)}
                   placeholder="Create a secure password"
-                  className="pr-10"
+                  className="bg-white/20 border-white/30 text-white placeholder:text-white/60 focus:bg-white/30 focus:border-white/50 pr-10"
                 />
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 text-white/60 hover:text-white"
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -183,12 +184,13 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="phone">Phone Number</Label>
+              <Label htmlFor="phone" className="text-white/90">Phone Number</Label>
               <Input
                 id="phone"
                 value={formData.phone}
                 onChange={(e) => handleInputChange('phone', e.target.value)}
                 placeholder="+91 xxxxx xxxxx"
+                className="bg-white/20 border-white/30 text-white placeholder:text-white/60 focus:bg-white/30 focus:border-white/50"
               />
             </div>
           </div>
@@ -198,107 +200,112 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
         return (
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="companyName">Company Name *</Label>
+              <Label htmlFor="companyName" className="text-white/90">Company Name *</Label>
               <Input
                 id="companyName"
                 value={formData.companyName}
                 onChange={(e) => handleInputChange('companyName', e.target.value)}
                 placeholder="Your company name"
+                className="bg-white/20 border-white/30 text-white placeholder:text-white/60 focus:bg-white/30 focus:border-white/50"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="businessEmail">Business Email *</Label>
+              <Label htmlFor="businessEmail" className="text-white/90">Business Email *</Label>
               <Input
                 id="businessEmail"
                 type="email"
                 value={formData.businessEmail}
                 onChange={(e) => handleInputChange('businessEmail', e.target.value)}
                 placeholder="business@company.com"
+                className="bg-white/20 border-white/30 text-white placeholder:text-white/60 focus:bg-white/30 focus:border-white/50"
               />
-              <p className="text-xs text-gray-500">This will be used for sending follow-up emails</p>
+              <p className="text-xs text-white/60">This will be used for sending follow-up emails</p>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label htmlFor="jobTitle">Job Title *</Label>
+                <Label htmlFor="jobTitle" className="text-white/90">Job Title *</Label>
                 <Input
                   id="jobTitle"
                   value={formData.jobTitle}
                   onChange={(e) => handleInputChange('jobTitle', e.target.value)}
                   placeholder="Your role"
+                  className="bg-white/20 border-white/30 text-white placeholder:text-white/60 focus:bg-white/30 focus:border-white/50"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="location">Location</Label>
+                <Label htmlFor="location" className="text-white/90">Location</Label>
                 <Input
                   id="location"
                   value={formData.location}
                   onChange={(e) => handleInputChange('location', e.target.value)}
                   placeholder="City, Country"
+                  className="bg-white/20 border-white/30 text-white placeholder:text-white/60 focus:bg-white/30 focus:border-white/50"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="website">Company Website</Label>
+              <Label htmlFor="website" className="text-white/90">Company Website</Label>
               <Input
                 id="website"
                 value={formData.website}
                 onChange={(e) => handleInputChange('website', e.target.value)}
                 placeholder="https://yourcompany.com"
+                className="bg-white/20 border-white/30 text-white placeholder:text-white/60 focus:bg-white/30 focus:border-white/50"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label htmlFor="primaryRole">Primary Role at Events</Label>
+                <Label htmlFor="primaryRole" className="text-white/90">Primary Role at Events</Label>
                 <select
                   id="primaryRole"
                   value={formData.primaryRole}
                   onChange={(e) => handleInputChange('primaryRole', e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md"
+                  className="w-full p-2 border border-white/30 rounded-md bg-white/20 text-white"
                 >
-                  <option value="">Select role</option>
-                  <option value="exhibitor">Exhibitor</option>
-                  <option value="visitor">Visitor</option>
-                  <option value="buyer">Buyer</option>
-                  <option value="speaker">Speaker</option>
-                  <option value="sponsor">Sponsor</option>
+                  <option value="" className="text-gray-800">Select role</option>
+                  <option value="exhibitor" className="text-gray-800">Exhibitor</option>
+                  <option value="visitor" className="text-gray-800">Visitor</option>
+                  <option value="buyer" className="text-gray-800">Buyer</option>
+                  <option value="speaker" className="text-gray-800">Speaker</option>
+                  <option value="sponsor" className="text-gray-800">Sponsor</option>
                 </select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="industryType">Industry Type</Label>
+                <Label htmlFor="industryType" className="text-white/90">Industry Type</Label>
                 <select
                   id="industryType"
                   value={formData.industryType}
                   onChange={(e) => handleInputChange('industryType', e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md"
+                  className="w-full p-2 border border-white/30 rounded-md bg-white/20 text-white"
                 >
-                  <option value="">Select industry</option>
-                  <option value="pharmaceuticals">Pharmaceuticals</option>
-                  <option value="healthcare">Healthcare</option>
-                  <option value="b2b-saas">B2B SaaS</option>
-                  <option value="education">Education</option>
-                  <option value="fintech">FinTech</option>
-                  <option value="manufacturing">Manufacturing</option>
-                  <option value="other">Other</option>
+                  <option value="" className="text-gray-800">Select industry</option>
+                  <option value="pharmaceuticals" className="text-gray-800">Pharmaceuticals</option>
+                  <option value="healthcare" className="text-gray-800">Healthcare</option>
+                  <option value="b2b-saas" className="text-gray-800">B2B SaaS</option>
+                  <option value="education" className="text-gray-800">Education</option>
+                  <option value="fintech" className="text-gray-800">FinTech</option>
+                  <option value="manufacturing" className="text-gray-800">Manufacturing</option>
+                  <option value="other" className="text-gray-800">Other</option>
                 </select>
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="eventsPerYear">Events Attended Annually</Label>
+              <Label htmlFor="eventsPerYear" className="text-white/90">Events Attended Annually</Label>
               <select
                 id="eventsPerYear"
                 value={formData.eventsPerYear}
                 onChange={(e) => handleInputChange('eventsPerYear', e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-md"
+                className="w-full p-2 border border-white/30 rounded-md bg-white/20 text-white"
               >
-                <option value="1-5">1-5 events</option>
-                <option value="6-15">6-15 events</option>
-                <option value="16-30">16-30 events</option>
-                <option value="30+">30+ events</option>
+                <option value="1-5" className="text-gray-800">1-5 events</option>
+                <option value="6-15" className="text-gray-800">6-15 events</option>
+                <option value="16-30" className="text-gray-800">16-30 events</option>
+                <option value="30+" className="text-gray-800">30+ events</option>
               </select>
             </div>
           </div>
@@ -309,30 +316,30 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label htmlFor="teamSize">Team Size</Label>
+                <Label htmlFor="teamSize" className="text-white/90">Team Size</Label>
                 <select
                   id="teamSize"
                   value={formData.teamSize}
                   onChange={(e) => handleInputChange('teamSize', e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md"
+                  className="w-full p-2 border border-white/30 rounded-md bg-white/20 text-white"
                 >
-                  <option value="1">Just me</option>
-                  <option value="2-5">2-5 people</option>
-                  <option value="6-15">6-15 people</option>
-                  <option value="16+">16+ people</option>
+                  <option value="1" className="text-gray-800">Just me</option>
+                  <option value="2-5" className="text-gray-800">2-5 people</option>
+                  <option value="6-15" className="text-gray-800">6-15 people</option>
+                  <option value="16+" className="text-gray-800">16+ people</option>
                 </select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="preferredComm">Preferred Communication</Label>
+                <Label htmlFor="preferredComm" className="text-white/90">Preferred Communication</Label>
                 <select
                   id="preferredComm"
                   value={formData.preferredComm}
                   onChange={(e) => handleInputChange('preferredComm', e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md"
+                  className="w-full p-2 border border-white/30 rounded-md bg-white/20 text-white"
                 >
-                  <option value="email">Email</option>
-                  <option value="whatsapp">WhatsApp</option>
-                  <option value="both">Both</option>
+                  <option value="email" className="text-gray-800">Email</option>
+                  <option value="whatsapp" className="text-gray-800">WhatsApp</option>
+                  <option value="both" className="text-gray-800">Both</option>
                 </select>
               </div>
             </div>
@@ -346,7 +353,7 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
                   onChange={(e) => handleInputChange('isTeamLead', e.target.checked)}
                   className="rounded"
                 />
-                <Label htmlFor="isTeamLead">I lead a team at events</Label>
+                <Label htmlFor="isTeamLead" className="text-white/90">I lead a team at events</Label>
               </div>
 
               <div className="flex items-center space-x-2">
@@ -357,7 +364,7 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
                   onChange={(e) => handleInputChange('addTeammates', e.target.checked)}
                   className="rounded"
                 />
-                <Label htmlFor="addTeammates">I want to add teammates now</Label>
+                <Label htmlFor="addTeammates" className="text-white/90">I want to add teammates now</Label>
               </div>
             </div>
           </div>
@@ -366,53 +373,57 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
       case 3:
         return (
           <div className="space-y-4">
-            <p className="text-sm text-gray-600 mb-4">Connect your social profiles (all optional)</p>
+            <p className="text-sm text-white/70 mb-4">Connect your social profiles (all optional)</p>
             
             <div className="space-y-3">
               <div className="space-y-2">
-                <Label htmlFor="linkedinProfile">LinkedIn Profile</Label>
+                <Label htmlFor="linkedinProfile" className="text-white/90">LinkedIn Profile</Label>
                 <Input
                   id="linkedinProfile"
                   value={formData.linkedinProfile}
                   onChange={(e) => handleInputChange('linkedinProfile', e.target.value)}
                   placeholder="https://linkedin.com/in/yourname"
+                  className="bg-white/20 border-white/30 text-white placeholder:text-white/60 focus:bg-white/30 focus:border-white/50"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="instagram">Instagram</Label>
+                <Label htmlFor="instagram" className="text-white/90">Instagram</Label>
                 <Input
                   id="instagram"
                   value={formData.instagram}
                   onChange={(e) => handleInputChange('instagram', e.target.value)}
                   placeholder="@yourusername"
+                  className="bg-white/20 border-white/30 text-white placeholder:text-white/60 focus:bg-white/30 focus:border-white/50"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="whatsappBusiness">WhatsApp Business</Label>
+                <Label htmlFor="whatsappBusiness" className="text-white/90">WhatsApp Business</Label>
                 <Input
                   id="whatsappBusiness"
                   value={formData.whatsappBusiness}
                   onChange={(e) => handleInputChange('whatsappBusiness', e.target.value)}
                   placeholder="+91 xxxxx xxxxx"
+                  className="bg-white/20 border-white/30 text-white placeholder:text-white/60 focus:bg-white/30 focus:border-white/50"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="twitter">X/Twitter</Label>
+                <Label htmlFor="twitter" className="text-white/90">X/Twitter</Label>
                 <Input
                   id="twitter"
                   value={formData.twitter}
                   onChange={(e) => handleInputChange('twitter', e.target.value)}
                   placeholder="@yourusername"
+                  className="bg-white/20 border-white/30 text-white placeholder:text-white/60 focus:bg-white/30 focus:border-white/50"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="companyBrochure">Company Brochure/Deck (Optional)</Label>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+              <Label htmlFor="companyBrochure" className="text-white/90">Company Brochure/Deck (Optional)</Label>
+              <div className="border-2 border-dashed border-white/30 rounded-lg p-4 text-center">
                 <input
                   type="file"
                   id="companyBrochure"
@@ -424,30 +435,30 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
                   type="button"
                   variant="ghost"
                   onClick={() => document.getElementById('companyBrochure')?.click()}
-                  className="w-full"
+                  className="w-full text-white/80 hover:text-white hover:bg-white/10"
                 >
                   <Upload className="w-4 h-4 mr-2" />
                   {formData.companyBrochure ? formData.companyBrochure.name : 'Upload File'}
                 </Button>
-                <p className="text-xs text-gray-500 mt-2">PDF, PPT, DOC files up to 10MB</p>
+                <p className="text-xs text-white/60 mt-2">PDF, PPT, DOC files up to 10MB</p>
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="hearAboutUs">How did you hear about WOW Circle?</Label>
+              <Label htmlFor="hearAboutUs" className="text-white/90">How did you hear about WOW Circle?</Label>
               <select
                 id="hearAboutUs"
                 value={formData.hearAboutUs}
                 onChange={(e) => handleInputChange('hearAboutUs', e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-md"
+                className="w-full p-2 border border-white/30 rounded-md bg-white/20 text-white"
               >
-                <option value="">Select source</option>
-                <option value="google">Google Search</option>
-                <option value="linkedin">LinkedIn</option>
-                <option value="referral">Friend/Colleague Referral</option>
-                <option value="event">At an event</option>
-                <option value="social">Social Media</option>
-                <option value="other">Other</option>
+                <option value="" className="text-gray-800">Select source</option>
+                <option value="google" className="text-gray-800">Google Search</option>
+                <option value="linkedin" className="text-gray-800">LinkedIn</option>
+                <option value="referral" className="text-gray-800">Friend/Colleague Referral</option>
+                <option value="event" className="text-gray-800">At an event</option>
+                <option value="social" className="text-gray-800">Social Media</option>
+                <option value="other" className="text-gray-800">Other</option>
               </select>
             </div>
           </div>
