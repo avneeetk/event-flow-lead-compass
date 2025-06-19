@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { User, Building, Globe, Eye, EyeOff } from 'lucide-react';
+import { User, Building, Globe, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 interface RegistrationScreenProps {
@@ -39,6 +39,7 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
   const [currentSection, setCurrentSection] = useState(0);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
   const sections = [
     {
@@ -60,6 +61,36 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    // Clear validation errors when user starts typing
+    if (validationErrors.length > 0) {
+      setValidationErrors([]);
+    }
+  };
+
+  const validateCurrentSection = () => {
+    const errors: string[] = [];
+    const currentFields = sections[currentSection].fields;
+    
+    if (currentSection === 0) {
+      // Section 1: All fields required + password match
+      if (!formData.name.trim()) errors.push("Full Name is required");
+      if (!formData.email.trim()) errors.push("Email Address is required");
+      if (!formData.password) errors.push("Password is required");
+      if (!formData.confirmPassword) errors.push("Confirm Password is required");
+      if (formData.password && formData.password.length < 6) errors.push("Password must be at least 6 characters");
+      if (formData.password && formData.confirmPassword && formData.password !== formData.confirmPassword) {
+        errors.push("Passwords don't match");
+      }
+    } else if (currentSection === 1) {
+      // Section 2: All fields required
+      if (!formData.company.trim()) errors.push("Company Name is required");
+      if (!formData.industry) errors.push("Industry is required");
+      if (!formData.city.trim()) errors.push("City is required");
+      if (!formData.role.trim()) errors.push("Your Role is required");
+    }
+    
+    setValidationErrors(errors);
+    return errors.length === 0;
   };
 
   const isCurrentSectionValid = () => {
@@ -82,7 +113,9 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
 
   const nextSection = () => {
     if (currentSection < sections.length - 1) {
-      setCurrentSection(currentSection + 1);
+      if (validateCurrentSection()) {
+        setCurrentSection(currentSection + 1);
+      }
     } else {
       completeRegistration();
     }
@@ -194,9 +227,6 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
                       {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </Button>
                   </div>
-                  {formData.password && formData.confirmPassword && formData.password !== formData.confirmPassword && (
-                    <p className="text-red-400 text-sm">Passwords don't match</p>
-                  )}
                 </div>
               </>
             )}
@@ -264,7 +294,7 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
                       checked={formData.whatsappEnabled}
                       onCheckedChange={(checked) => handleInputChange('whatsappEnabled', checked)}
                     />
-                    <Label className="text-white/90">WhatsApp Business (Optional)</Label>
+                    <Label className="text-white/90">WhatsApp Business</Label>
                   </div>
                   {formData.whatsappEnabled && (
                     <Input
@@ -277,7 +307,7 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="businessEmail" className="text-white/90">Business Email (Optional)</Label>
+                  <Label htmlFor="businessEmail" className="text-white/90">Business Email</Label>
                   <Input
                     id="businessEmail"
                     type="email"
@@ -289,7 +319,7 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="linkedin" className="text-white/90">LinkedIn (Optional)</Label>
+                  <Label htmlFor="linkedin" className="text-white/90">LinkedIn</Label>
                   <Input
                     id="linkedin"
                     placeholder="https://linkedin.com/in/sarahverma"
@@ -300,7 +330,7 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="instagram" className="text-white/90">Instagram (Optional)</Label>
+                  <Label htmlFor="instagram" className="text-white/90">Instagram</Label>
                   <Input
                     id="instagram"
                     placeholder="@yourcompany"
@@ -311,7 +341,7 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="twitter" className="text-white/90">X/Twitter (Optional)</Label>
+                  <Label htmlFor="twitter" className="text-white/90">X/Twitter</Label>
                   <Input
                     id="twitter"
                     placeholder="@yourcompany"
@@ -322,7 +352,7 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="website" className="text-white/90">Company Website (Optional)</Label>
+                  <Label htmlFor="website" className="text-white/90">Company Website</Label>
                   <Input
                     id="website"
                     placeholder="https://yourcompany.com"
@@ -332,6 +362,21 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
                   />
                 </div>
               </>
+            )}
+
+            {/* Validation Error Messages */}
+            {validationErrors.length > 0 && (
+              <div className="bg-red-500/20 border border-red-400/30 rounded-lg p-3">
+                <div className="flex items-center space-x-2 mb-2">
+                  <AlertCircle className="w-4 h-4 text-red-400" />
+                  <span className="text-red-400 text-sm font-medium">Please fix the following:</span>
+                </div>
+                <ul className="space-y-1">
+                  {validationErrors.map((error, index) => (
+                    <li key={index} className="text-red-300 text-sm">• {error}</li>
+                  ))}
+                </ul>
+              </div>
             )}
 
             <div className="pt-4 space-y-3">
