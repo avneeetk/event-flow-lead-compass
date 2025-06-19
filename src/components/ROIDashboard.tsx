@@ -1,66 +1,106 @@
 
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, Check, MessageSquare, User, TrendingUp, Download, Share } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import { Download, Filter, BarChart3, Users, Mail, CheckCircle } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
 const ROIDashboard = () => {
-  const eventMetrics = [
-    {
-      eventName: "BioAsia Expo 2024",
-      date: "Current Event",
-      leadsCaptured: 47,
-      followUpsSent: 28,
-      conversions: 3,
-      pipelineValue: "₹4.2L",
-      roiMultiplier: "6.3x",
-      status: "active",
-      eventCost: "₹65,000",
-      conversionRate: "6.4%"
-    },
-    {
-      eventName: "PharmaTech India 2024",
-      date: "Jan 2024",
-      leadsCaptured: 89,
-      followUpsSent: 76,
-      conversions: 12,
-      pipelineValue: "₹8.5L",
-      roiMultiplier: "4.2x",
-      status: "completed",
-      eventCost: "₹2,02,000",
-      conversionRate: "13.5%"
-    },
-    {
-      eventName: "MedExpo Mumbai 2023",
-      date: "Dec 2023",
-      leadsCaptured: 156,
-      followUpsSent: 134,
-      conversions: 23,
-      pipelineValue: "₹15.2L",
-      roiMultiplier: "5.8x",
-      status: "completed",
-      eventCost: "₹2,62,000",
-      conversionRate: "14.7%"
-    }
+  const [currentView, setCurrentView] = useState<'summary' | 'progress'>('summary');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [filterBy, setFilterBy] = useState('all');
+  const itemsPerPage = 10;
+
+  // Sample data
+  const allLeads = [
+    { id: 1, name: "Dr. Rakesh Sharma", event: "BioAsia Expo 2024", status: "Hot", followUpStatus: "Email Sent", lastContact: "2 days ago" },
+    { id: 2, name: "Priya Patel", event: "PharmaTech India", status: "Warm", followUpStatus: "Follow-up Done", lastContact: "1 week ago" },
+    { id: 3, name: "Dr. Sarah Johnson", event: "MedExpo Mumbai", status: "Cold", followUpStatus: "Scheduled", lastContact: "3 days ago" },
+    { id: 4, name: "Amit Kumar", event: "BioAsia Expo 2024", status: "Hot", followUpStatus: "Email Sent", lastContact: "1 day ago" },
+    { id: 5, name: "Dr. Lisa Wong", event: "PharmaTech India", status: "Warm", followUpStatus: "Follow-up Done", lastContact: "4 days ago" },
+    { id: 6, name: "Rajesh Gupta", event: "BioAsia Expo 2024", status: "Hot", followUpStatus: "Email Sent", lastContact: "2 days ago" },
+    { id: 7, name: "Dr. Meera Singh", event: "MedExpo Mumbai", status: "Warm", followUpStatus: "Scheduled", lastContact: "1 week ago" },
+    { id: 8, name: "Vikram Patel", event: "PharmaTech India", status: "Cold", followUpStatus: "Follow-up Done", lastContact: "5 days ago" },
+    { id: 9, name: "Dr. John Smith", event: "BioAsia Expo 2024", status: "Hot", followUpStatus: "Email Sent", lastContact: "3 days ago" },
+    { id: 10, name: "Sneha Sharma", event: "MedExpo Mumbai", status: "Warm", followUpStatus: "Scheduled", lastContact: "2 days ago" },
+    { id: 11, name: "Dr. Robert Johnson", event: "PharmaTech India", status: "Hot", followUpStatus: "Follow-up Done", lastContact: "1 day ago" },
+    { id: 12, name: "Kavitha Reddy", event: "BioAsia Expo 2024", status: "Cold", followUpStatus: "Email Sent", lastContact: "6 days ago" }
   ];
 
-  const overallStats = {
-    totalLeads: 292,
-    totalFollowUps: 238,
-    totalConversions: 38,
-    totalPipeline: "₹27.9L",
-    totalInvestment: "₹5,29,000",
-    avgConversionRate: "13.0%",
-    avgDealSize: "₹73,421",
-    totalROI: "5.27x"
+  const summaryStats = {
+    totalLeads: 98,
+    emailsSent: 76,
+    followUpsDone: 54,
+    dealsInProgress: 12
   };
+
+  const progressData = [
+    { stage: "Contacted", count: 98, percentage: 100 },
+    { stage: "Email Sent", count: 76, percentage: 78 },
+    { stage: "Replied", count: 34, percentage: 35 },
+    { stage: "Deal", count: 12, percentage: 12 }
+  ];
+
+  // Filter and paginate leads
+  const filteredLeads = filterBy === 'all' ? allLeads : allLeads.filter(lead => 
+    filterBy === 'event' ? lead.event === 'BioAsia Expo 2024' : 
+    filterBy === 'hot' ? lead.status === 'Hot' :
+    filterBy === 'warm' ? lead.status === 'Warm' : 
+    lead.status === 'Cold'
+  );
+
+  const totalPages = Math.ceil(filteredLeads.length / itemsPerPage);
+  const paginatedLeads = filteredLeads.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   const getStatusColor = (status: string) => {
-    return status === 'active' ? 'bg-green-500' : 'bg-blue-500';
+    switch (status) {
+      case 'Hot': return 'bg-red-100 text-red-800';
+      case 'Warm': return 'bg-yellow-100 text-yellow-800';
+      case 'Cold': return 'bg-blue-100 text-blue-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
   };
 
-  const getStatusBadge = (status: string) => {
-    return status === 'active' ? 'default' : 'secondary';
+  const getFollowUpColor = (status: string) => {
+    switch (status) {
+      case 'Email Sent': return 'bg-green-100 text-green-800';
+      case 'Follow-up Done': return 'bg-blue-100 text-blue-800';
+      case 'Scheduled': return 'bg-purple-100 text-purple-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const handleExportCSV = () => {
+    const csvContent = [
+      ['Name', 'Event', 'Lead Status', 'Follow-up Status', 'Last Contact'],
+      ...allLeads.map(lead => [
+        lead.name,
+        lead.event,
+        lead.status,
+        lead.followUpStatus,
+        lead.lastContact
+      ])
+    ].map(row => row.join(',')).join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'wow-circle-leads-report.csv';
+    a.click();
+    window.URL.revokeObjectURL(url);
+
+    toast({
+      title: "Export Complete",
+      description: "Your leads report has been downloaded as CSV.",
+    });
   };
 
   return (
@@ -68,179 +108,244 @@ const ROIDashboard = () => {
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-800 mb-2">ROI Dashboard</h1>
-        <p className="text-gray-600">Track performance and justify event investments</p>
+        <p className="text-gray-600">Track your lead performance and ROI</p>
       </div>
 
-      {/* Overall ROI Banner */}
-      <Card className="mb-6 bg-gradient-to-r from-green-600 via-green-700 to-blue-600 text-white">
-        <CardContent className="p-6">
-          <div className="text-center mb-4">
-            <h2 className="text-lg font-semibold text-green-100">Total Event ROI</h2>
-            <p className="text-4xl font-bold">{overallStats.totalROI}</p>
-            <p className="text-green-100">Return on Investment</p>
-          </div>
-          <div className="grid grid-cols-2 gap-4 text-center">
-            <div>
-              <p className="text-2xl font-bold">{overallStats.totalPipeline}</p>
-              <p className="text-green-100 text-sm">Total Pipeline Value</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold">{overallStats.totalInvestment}</p>
-              <p className="text-green-100 text-sm">Total Investment</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Quick Stats Grid */}
-      <div className="grid grid-cols-2 gap-4 mb-6">
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className="flex items-center justify-center mb-2">
-              <User className="w-5 h-5 text-blue-600 mr-2" />
-              <span className="text-2xl font-bold text-blue-600">{overallStats.totalLeads}</span>
-            </div>
-            <p className="text-sm text-gray-500">Total Leads</p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className="flex items-center justify-center mb-2">
-              <Check className="w-5 h-5 text-green-600 mr-2" />
-              <span className="text-2xl font-bold text-green-600">{overallStats.totalConversions}</span>
-            </div>
-            <p className="text-sm text-gray-500">Conversions</p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className="flex items-center justify-center mb-2">
-              <TrendingUp className="w-5 h-5 text-purple-600 mr-2" />
-              <span className="text-2xl font-bold text-purple-600">{overallStats.avgConversionRate}</span>
-            </div>
-            <p className="text-sm text-gray-500">Avg Conversion</p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className="flex items-center justify-center mb-2">
-              <Calendar className="w-5 h-5 text-orange-600 mr-2" />
-              <span className="text-2xl font-bold text-orange-600">{overallStats.avgDealSize}</span>
-            </div>
-            <p className="text-sm text-gray-500">Avg Deal Size</p>
-          </CardContent>
-        </Card>
+      {/* View Toggle */}
+      <div className="flex bg-gray-200 rounded-lg p-1 mb-6">
+        <Button
+          variant={currentView === 'summary' ? 'default' : 'ghost'}
+          size="sm"
+          onClick={() => setCurrentView('summary')}
+          className="flex-1"
+        >
+          Summary View
+        </Button>
+        <Button
+          variant={currentView === 'progress' ? 'default' : 'ghost'}
+          size="sm"
+          onClick={() => setCurrentView('progress')}
+          className="flex-1"
+        >
+          Progress Report
+        </Button>
       </div>
 
-      {/* Event Performance Details */}
-      <div className="mb-6">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">Event Performance Breakdown</h2>
-        
-        <div className="space-y-4">
-          {eventMetrics.map((event, index) => (
-            <Card key={index} className="relative overflow-hidden">
-              <div className={`absolute top-0 left-0 w-1 h-full ${getStatusColor(event.status)}`}></div>
-              
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <CardTitle className="text-base">{event.eventName}</CardTitle>
-                    <p className="text-sm text-gray-600">{event.date}</p>
-                  </div>
-                  <div className="text-right">
-                    <Badge variant={getStatusBadge(event.status)} className="mb-1">
-                      {event.status}
-                    </Badge>
-                    <p className="text-lg font-bold text-green-600">{event.roiMultiplier}</p>
-                    <p className="text-xs text-gray-500">ROI</p>
-                  </div>
+      {currentView === 'summary' && (
+        <>
+          {/* Summary Stats */}
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <Card>
+              <CardContent className="p-4 text-center">
+                <div className="flex items-center justify-center mb-2">
+                  <Users className="w-5 h-5 text-blue-600 mr-2" />
+                  <span className="text-2xl font-bold text-blue-600">{summaryStats.totalLeads}</span>
                 </div>
-              </CardHeader>
-              
-              <CardContent className="pt-0">
-                {/* Metrics Grid */}
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Leads Captured</span>
-                      <span className="font-semibold">{event.leadsCaptured}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Follow-ups Sent</span>
-                      <span className="font-semibold">{event.followUpsSent}</span>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Conversions</span>
-                      <span className="font-semibold text-green-600">{event.conversions}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Pipeline Value</span>
-                      <span className="font-semibold text-blue-600">{event.pipelineValue}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Financial Summary */}
-                <div className="bg-gray-50 rounded-lg p-3 mb-4">
-                  <div className="grid grid-cols-3 gap-4 text-center">
-                    <div>
-                      <p className="text-sm text-gray-600">Investment</p>
-                      <p className="font-semibold">{event.eventCost}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Conversion Rate</p>
-                      <p className="font-semibold text-green-600">{event.conversionRate}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">ROI Multiple</p>
-                      <p className="font-semibold text-purple-600">{event.roiMultiplier}</p>
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Action Button */}
-                {event.status === 'completed' && (
-                  <Button size="sm" variant="outline" className="w-full">
-                    <Download className="w-4 h-4 mr-2" />
-                    Download Report
-                  </Button>
-                )}
+                <p className="text-sm text-gray-500">Total Leads Captured</p>
               </CardContent>
             </Card>
-          ))}
-        </div>
-      </div>
-
-      {/* Export & Share */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base flex items-center">
-            <Share className="w-5 h-5 mr-2" />
-            Export & Share
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            <Button variant="outline" className="w-full h-12">
-              <Download className="w-4 h-4 mr-2" />
-              Export Detailed CSV Report
-            </Button>
-            <Button className="w-full h-12 bg-gradient-to-r from-blue-600 to-purple-600">
-              <Share className="w-4 h-4 mr-2" />
-              Share ROI Summary with Manager
-            </Button>
+            
+            <Card>
+              <CardContent className="p-4 text-center">
+                <div className="flex items-center justify-center mb-2">
+                  <Mail className="w-5 h-5 text-green-600 mr-2" />
+                  <span className="text-2xl font-bold text-green-600">{summaryStats.emailsSent}</span>
+                </div>
+                <p className="text-sm text-gray-500">Emails Sent</p>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-4 text-center">
+                <div className="flex items-center justify-center mb-2">
+                  <CheckCircle className="w-5 h-5 text-purple-600 mr-2" />
+                  <span className="text-2xl font-bold text-purple-600">{summaryStats.followUpsDone}</span>
+                </div>
+                <p className="text-sm text-gray-500">Follow-ups Done</p>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-4 text-center">
+                <div className="flex items-center justify-center mb-2">
+                  <BarChart3 className="w-5 h-5 text-orange-600 mr-2" />
+                  <span className="text-2xl font-bold text-orange-600">{summaryStats.dealsInProgress}</span>
+                </div>
+                <p className="text-sm text-gray-500">Deals in Progress</p>
+              </CardContent>
+            </Card>
           </div>
-          <p className="text-xs text-gray-500 mt-3 text-center">
-            Professional reports ready for management review and budget justification
-          </p>
-        </CardContent>
-      </Card>
+
+          {/* Filter */}
+          <div className="mb-4">
+            <Select value={filterBy} onValueChange={setFilterBy}>
+              <SelectTrigger className="w-48">
+                <Filter className="w-4 h-4 mr-2" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Leads</SelectItem>
+                <SelectItem value="event">Current Event</SelectItem>
+                <SelectItem value="hot">Hot Leads</SelectItem>
+                <SelectItem value="warm">Warm Leads</SelectItem>
+                <SelectItem value="cold">Cold Leads</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Leads Table */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="text-base">Leads Overview</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Follow-up Status</TableHead>
+                    <TableHead>Lead Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {paginatedLeads.map((lead) => (
+                    <TableRow key={lead.id}>
+                      <TableCell>
+                        <div>
+                          <div className="font-medium">{lead.name}</div>
+                          <div className="text-sm text-gray-500">{lead.event}</div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge className={getFollowUpColor(lead.followUpStatus)}>
+                          {lead.followUpStatus}
+                        </Badge>
+                        <div className="text-xs text-gray-500 mt-1">{lead.lastContact}</div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge className={getStatusColor(lead.status)}>
+                          {lead.status}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="mt-4">
+                  <Pagination>
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious 
+                          onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                          className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
+                        />
+                      </PaginationItem>
+                      {[...Array(totalPages)].map((_, i) => (
+                        <PaginationItem key={i}>
+                          <PaginationLink
+                            onClick={() => setCurrentPage(i + 1)}
+                            isActive={currentPage === i + 1}
+                          >
+                            {i + 1}
+                          </PaginationLink>
+                        </PaginationItem>
+                      ))}
+                      <PaginationItem>
+                        <PaginationNext
+                          onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                          className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
+                        />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </>
+      )}
+
+      {currentView === 'progress' && (
+        <>
+          {/* Progress Funnel */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="text-base">Lead Conversion Funnel</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {progressData.map((stage, index) => (
+                  <div key={stage.stage} className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="font-medium">{stage.stage}</span>
+                      <span>{stage.count} ({stage.percentage}%)</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-3">
+                      <div
+                        className="bg-gradient-to-r from-blue-500 to-purple-600 h-3 rounded-full transition-all duration-500"
+                        style={{ width: `${stage.percentage}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Event/Teammate Filter for Progress */}
+          <div className="mb-4">
+            <Select>
+              <SelectTrigger className="w-48">
+                <Filter className="w-4 h-4 mr-2" />
+                <SelectValue placeholder="Filter by Event" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="bioasia">BioAsia Expo 2024</SelectItem>
+                <SelectItem value="pharmatech">PharmaTech India</SelectItem>
+                <SelectItem value="medexpo">MedExpo Mumbai</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Simplified Progress Table */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="text-base">Detailed Progress</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Stage</TableHead>
+                    <TableHead>Count</TableHead>
+                    <TableHead>Conversion Rate</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {progressData.map((stage) => (
+                    <TableRow key={stage.stage}>
+                      <TableCell className="font-medium">{stage.stage}</TableCell>
+                      <TableCell>{stage.count}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{stage.percentage}%</Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </>
+      )}
+
+      {/* Export Button */}
+      <Button onClick={handleExportCSV} className="w-full h-12 bg-gradient-to-r from-green-600 to-blue-600">
+        <Download className="w-4 h-4 mr-2" />
+        Export CSV Report
+      </Button>
     </div>
   );
 };

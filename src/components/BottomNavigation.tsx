@@ -1,6 +1,6 @@
 
 import { Button } from '@/components/ui/button';
-import { Badge, User, MessageSquare, Calendar } from 'lucide-react';
+import { Badge, User, MessageSquare, Calendar, Settings } from 'lucide-react';
 
 interface BottomNavigationProps {
   currentView: string;
@@ -30,9 +30,9 @@ const BottomNavigation = ({ currentView, onViewChange }: BottomNavigationProps) 
       icon: Calendar,
     },
     {
-      id: 'team',
+      id: 'team-manage',
       label: 'Team',
-      icon: User,
+      icon: Settings,
     }
   ];
 

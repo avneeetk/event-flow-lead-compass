@@ -1,5 +1,5 @@
-
 import { useState, useEffect } from 'react';
+import LoginScreen from '../components/LoginScreen';
 import RegistrationScreen from '../components/RegistrationScreen';
 import OnboardingScreen from '../components/OnboardingScreen';
 import LeadCaptureScreen from '../components/LeadCaptureScreen';
@@ -7,22 +7,31 @@ import ContactDashboard from '../components/ContactDashboard';
 import FollowUpAssistant from '../components/FollowUpAssistant';
 import ROIDashboard from '../components/ROIDashboard';
 import TeamCollaboration from '../components/TeamCollaboration';
+import TeamManagement from '../components/TeamManagement';
 import BottomNavigation from '../components/BottomNavigation';
+import SupportChat from '../components/SupportChat';
 import { Toaster } from '@/components/ui/toaster';
+import { toast } from '@/hooks/use-toast';
 
 const Index = () => {
-  const [hasRegistered, setHasRegistered] = useState(false);
+  const [hasLoggedIn, setHasLoggedIn] = useState(false);
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
   const [currentView, setCurrentView] = useState('capture');
   const [isEventModeActive, setIsEventModeActive] = useState(false);
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
+  const [isGuestMode, setIsGuestMode] = useState(false);
 
   useEffect(() => {
-    const registrationComplete = localStorage.getItem('registrationComplete');
+    const loginComplete = localStorage.getItem('loginComplete');
     const onboardingComplete = localStorage.getItem('onboardingComplete');
     const eventMode = localStorage.getItem('eventModeActive');
+    const guestMode = localStorage.getItem('guestMode');
     
-    if (registrationComplete === 'true') {
-      setHasRegistered(true);
+    if (loginComplete === 'true' || guestMode === 'true') {
+      setHasLoggedIn(true);
+      if (guestMode === 'true') {
+        setIsGuestMode(true);
+      }
     }
     if (onboardingComplete === 'true') {
       setHasCompletedOnboarding(true);
@@ -32,10 +41,15 @@ const Index = () => {
     }
   }, []);
 
+  const completeLogin = (credentials: any) => {
+    localStorage.setItem('loginComplete', 'true');
+    setHasLoggedIn(true);
+  };
+
   const completeRegistration = (userData: any) => {
-    localStorage.setItem('registrationComplete', 'true');
+    localStorage.setItem('loginComplete', 'true');
     localStorage.setItem('userData', JSON.stringify(userData));
-    setHasRegistered(true);
+    setHasLoggedIn(true);
   };
 
   const completeOnboarding = () => {
@@ -48,11 +62,37 @@ const Index = () => {
     setIsEventModeActive(true);
   };
 
-  if (!hasRegistered) {
-    return <RegistrationScreen onComplete={completeRegistration} />;
+  const handleGuestMode = () => {
+    localStorage.setItem('guestMode', 'true');
+    setIsGuestMode(true);
+    setHasLoggedIn(true);
+    toast({
+      title: "Guest Mode Activated",
+      description: "You can explore the app. Some features may be limited.",
+    });
+  };
+
+  // Handle auth flow
+  if (!hasLoggedIn) {
+    if (authMode === 'login') {
+      return (
+        <LoginScreen
+          onLogin={completeLogin}
+          onSwitchToRegister={() => setAuthMode('register')}
+          onGuestMode={handleGuestMode}
+        />
+      );
+    } else {
+      return (
+        <RegistrationScreen
+          onComplete={completeRegistration}
+          onSwitchToLogin={() => setAuthMode('login')}
+        />
+      );
+    }
   }
 
-  if (!hasCompletedOnboarding) {
+  if (!hasCompletedOnboarding && !isGuestMode) {
     return <OnboardingScreen onComplete={completeOnboarding} onActivateEventMode={activateEventMode} />;
   }
 
@@ -68,6 +108,8 @@ const Index = () => {
         return <ROIDashboard />;
       case 'team':
         return <TeamCollaboration />;
+      case 'team-manage':
+        return <TeamManagement />;
       default:
         return <LeadCaptureScreen isEventModeActive={isEventModeActive} />;
     }
@@ -83,8 +125,16 @@ const Index = () => {
           </div>
         )}
         
+        {/* Guest Mode Banner */}
+        {isGuestMode && !isEventModeActive && (
+          <div className="bg-gradient-to-r from-orange-500 to-red-600 text-white text-center py-2 text-sm font-medium">
+            👤 Guest Mode - Limited Features Available
+          </div>
+        )}
+        
         {renderCurrentView()}
         <BottomNavigation currentView={currentView} onViewChange={setCurrentView} />
+        <SupportChat />
       </div>
       <Toaster />
     </div>

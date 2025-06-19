@@ -5,76 +5,79 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge, User, Building, Globe, Linkedin, Upload, Users } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { User, Building, Globe, Eye, EyeOff } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 interface RegistrationScreenProps {
   onComplete: (userData: any) => void;
+  onSwitchToLogin: () => void;
 }
 
-const RegistrationScreen = ({ onComplete }: RegistrationScreenProps) => {
+const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenProps) => {
   const [formData, setFormData] = useState({
-    // Personal Info
+    // Section 1: Create Account
     name: '',
     email: '',
-    phone: '',
-    role: '',
-    // Business Details
+    password: '',
+    confirmPassword: '',
+    // Section 2: Business Information
     company: '',
-    website: '',
     industry: '',
-    primaryRole: '',
-    eventsPerYear: '',
-    teamSize: '',
-    leadingTeam: '',
-    addTeammatesNow: '',
-    // Preferences
+    city: '',
+    role: '',
+    // Section 3: Communication Channels
+    whatsappEnabled: false,
+    whatsappNumber: '',
     linkedin: '',
-    preferredCommunication: '',
-    hearAboutUs: '',
-    // Optional
-    brochure: null as File | null
+    instagram: '',
+    twitter: '',
+    website: '',
+    businessEmail: ''
   });
 
   const [currentSection, setCurrentSection] = useState(0);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const sections = [
     {
-      title: "Personal Information",
+      title: "Create Account",
       icon: <User className="w-6 h-6" />,
-      fields: ['name', 'email', 'phone', 'role']
+      fields: ['name', 'email', 'password', 'confirmPassword']
     },
     {
-      title: "Business Details", 
+      title: "Business Information", 
       icon: <Building className="w-6 h-6" />,
-      fields: ['company', 'website', 'industry', 'primaryRole', 'eventsPerYear']
+      fields: ['company', 'industry', 'city', 'role']
     },
     {
-      title: "Team & Preferences",
-      icon: <Users className="w-6 h-6" />,
-      fields: ['teamSize', 'leadingTeam', 'preferredCommunication']
-    },
-    {
-      title: "Social & Optional",
+      title: "Communication Channels",
       icon: <Globe className="w-6 h-6" />,
-      fields: ['linkedin', 'hearAboutUs', 'brochure']
+      fields: [] // All optional fields
     }
   ];
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleFileUpload = (file: File | null) => {
-    setFormData(prev => ({ ...prev, brochure: file }));
   };
 
   const isCurrentSectionValid = () => {
     const currentFields = sections[currentSection].fields;
-    return currentFields.every(field => {
-      if (['brochure', 'linkedin', 'website', 'hearAboutUs', 'addTeammatesNow'].includes(field)) return true;
-      return formData[field as keyof typeof formData];
-    });
+    
+    if (currentSection === 0) {
+      // Section 1: All fields required + password match
+      const requiredValid = currentFields.every(field => formData[field as keyof typeof formData]);
+      const passwordMatch = formData.password === formData.confirmPassword;
+      const passwordLength = formData.password.length >= 6;
+      return requiredValid && passwordMatch && passwordLength;
+    } else if (currentSection === 1) {
+      // Section 2: All fields required
+      return currentFields.every(field => formData[field as keyof typeof formData]);
+    } else {
+      // Section 3: All optional
+      return true;
+    }
   };
 
   const nextSection = () => {
@@ -124,7 +127,7 @@ const RegistrationScreen = ({ onComplete }: RegistrationScreenProps) => {
           </CardHeader>
           
           <CardContent className="space-y-4">
-            {/* Personal Information */}
+            {/* Section 1: Create Account */}
             {currentSection === 0 && (
               <>
                 <div className="space-y-2">
@@ -134,7 +137,7 @@ const RegistrationScreen = ({ onComplete }: RegistrationScreenProps) => {
                     placeholder="Sarah Verma"
                     value={formData.name}
                     onChange={(e) => handleInputChange('name', e.target.value)}
-                    className="bg-white/10 border-white/30 text-white placeholder:text-white/50"
+                    className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
                   />
                 </div>
                 <div className="space-y-2">
@@ -145,33 +148,60 @@ const RegistrationScreen = ({ onComplete }: RegistrationScreenProps) => {
                     placeholder="sarah@pharmatech.com"
                     value={formData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
-                    className="bg-white/10 border-white/30 text-white placeholder:text-white/50"
+                    className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="phone" className="text-white/90">Phone Number *</Label>
-                  <Input
-                    id="phone"
-                    placeholder="+91 98765 43210"
-                    value={formData.phone}
-                    onChange={(e) => handleInputChange('phone', e.target.value)}
-                    className="bg-white/10 border-white/30 text-white placeholder:text-white/50"
-                  />
+                  <Label htmlFor="password" className="text-white/90">Password * (min 6 characters)</Label>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Create a secure password"
+                      value={formData.password}
+                      onChange={(e) => handleInputChange('password', e.target.value)}
+                      className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20 pr-10"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3 text-white/70 hover:text-white hover:bg-transparent"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </Button>
+                  </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="role" className="text-white/90">Job Title *</Label>
-                  <Input
-                    id="role"
-                    placeholder="Sales Lead, Business Development"
-                    value={formData.role}
-                    onChange={(e) => handleInputChange('role', e.target.value)}
-                    className="bg-white/10 border-white/30 text-white placeholder:text-white/50"
-                  />
+                  <Label htmlFor="confirmPassword" className="text-white/90">Confirm Password *</Label>
+                  <div className="relative">
+                    <Input
+                      id="confirmPassword"
+                      type={showConfirmPassword ? "text" : "password"}
+                      placeholder="Confirm your password"
+                      value={formData.confirmPassword}
+                      onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                      className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20 pr-10"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3 text-white/70 hover:text-white hover:bg-transparent"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    >
+                      {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </Button>
+                  </div>
+                  {formData.password && formData.confirmPassword && formData.password !== formData.confirmPassword && (
+                    <p className="text-red-400 text-sm">Passwords don't match</p>
+                  )}
                 </div>
               </>
             )}
 
-            {/* Business Details */}
+            {/* Section 2: Business Information */}
             {currentSection === 1 && (
               <>
                 <div className="space-y-2">
@@ -181,23 +211,13 @@ const RegistrationScreen = ({ onComplete }: RegistrationScreenProps) => {
                     placeholder="PharmaTech Solutions"
                     value={formData.company}
                     onChange={(e) => handleInputChange('company', e.target.value)}
-                    className="bg-white/10 border-white/30 text-white placeholder:text-white/50"
+                    className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="website" className="text-white/90">Company Website</Label>
-                  <Input
-                    id="website"
-                    placeholder="https://pharmatech.com"
-                    value={formData.website}
-                    onChange={(e) => handleInputChange('website', e.target.value)}
-                    className="bg-white/10 border-white/30 text-white placeholder:text-white/50"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="industry" className="text-white/90">Industry Type *</Label>
+                  <Label htmlFor="industry" className="text-white/90">Industry *</Label>
                   <Select onValueChange={(value) => handleInputChange('industry', value)}>
-                    <SelectTrigger className="bg-white/10 border-white/30 text-white">
+                    <SelectTrigger className="bg-white/10 border-white/30 text-white focus:bg-white/20">
                       <SelectValue placeholder="Select industry" />
                     </SelectTrigger>
                     <SelectContent>
@@ -211,131 +231,105 @@ const RegistrationScreen = ({ onComplete }: RegistrationScreenProps) => {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="primaryRole" className="text-white/90">Primary Role at Events *</Label>
-                  <Select onValueChange={(value) => handleInputChange('primaryRole', value)}>
-                    <SelectTrigger className="bg-white/10 border-white/30 text-white">
-                      <SelectValue placeholder="Select role" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="exhibitor">Exhibitor</SelectItem>
-                      <SelectItem value="visitor">Visitor</SelectItem>
-                      <SelectItem value="buyer">Buyer</SelectItem>
-                      <SelectItem value="speaker">Speaker</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Label htmlFor="city" className="text-white/90">City *</Label>
+                  <Input
+                    id="city"
+                    placeholder="Mumbai, Bengaluru, Delhi"
+                    value={formData.city}
+                    onChange={(e) => handleInputChange('city', e.target.value)}
+                    className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
+                  />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="eventsPerYear" className="text-white/90">Events Attended Annually *</Label>
-                  <Select onValueChange={(value) => handleInputChange('eventsPerYear', value)}>
-                    <SelectTrigger className="bg-white/10 border-white/30 text-white">
-                      <SelectValue placeholder="Select range" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1-3">1-3 events</SelectItem>
-                      <SelectItem value="4-8">4-8 events</SelectItem>
-                      <SelectItem value="9-15">9-15 events</SelectItem>
-                      <SelectItem value="15+">15+ events</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Label htmlFor="role" className="text-white/90">Your Role *</Label>
+                  <Input
+                    id="role"
+                    placeholder="Sales Lead, Business Development"
+                    value={formData.role}
+                    onChange={(e) => handleInputChange('role', e.target.value)}
+                    className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
+                  />
                 </div>
               </>
             )}
 
-            {/* Team & Preferences */}
+            {/* Section 3: Communication Channels */}
             {currentSection === 2 && (
               <>
-                <div className="space-y-2">
-                  <Label htmlFor="teamSize" className="text-white/90">Team Size *</Label>
-                  <Select onValueChange={(value) => handleInputChange('teamSize', value)}>
-                    <SelectTrigger className="bg-white/10 border-white/30 text-white">
-                      <SelectValue placeholder="Select team size" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="just-me">Just me</SelectItem>
-                      <SelectItem value="2-5">2-5 people</SelectItem>
-                      <SelectItem value="6-15">6-15 people</SelectItem>
-                      <SelectItem value="15+">15+ people</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <p className="text-white/80 text-sm mb-4">All fields in this section are optional</p>
+                
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-3">
+                    <Switch
+                      checked={formData.whatsappEnabled}
+                      onCheckedChange={(checked) => handleInputChange('whatsappEnabled', checked)}
+                    />
+                    <Label className="text-white/90">WhatsApp Business (Optional)</Label>
+                  </div>
+                  {formData.whatsappEnabled && (
+                    <Input
+                      placeholder="+91 98765 43210"
+                      value={formData.whatsappNumber}
+                      onChange={(e) => handleInputChange('whatsappNumber', e.target.value)}
+                      className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
+                    />
+                  )}
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="leadingTeam" className="text-white/90">Are you leading a team? *</Label>
-                  <Select onValueChange={(value) => handleInputChange('leadingTeam', value)}>
-                    <SelectTrigger className="bg-white/10 border-white/30 text-white">
-                      <SelectValue placeholder="Select option" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="yes">Yes, I'm a team lead</SelectItem>
-                      <SelectItem value="no">No, I'm an individual contributor</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="preferredCommunication" className="text-white/90">Preferred Communication *</Label>
-                  <Select onValueChange={(value) => handleInputChange('preferredCommunication', value)}>
-                    <SelectTrigger className="bg-white/10 border-white/30 text-white">
-                      <SelectValue placeholder="Select preference" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="email">Email</SelectItem>
-                      <SelectItem value="whatsapp">WhatsApp</SelectItem>
-                      <SelectItem value="both">Both</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </>
-            )}
 
-            {/* Social & Optional */}
-            {currentSection === 3 && (
-              <>
                 <div className="space-y-2">
-                  <Label htmlFor="linkedin" className="text-white/90 flex items-center space-x-2">
-                    <Linkedin className="w-4 h-4" />
-                    <span>LinkedIn Profile</span>
-                  </Label>
+                  <Label htmlFor="businessEmail" className="text-white/90">Business Email (Optional)</Label>
+                  <Input
+                    id="businessEmail"
+                    type="email"
+                    placeholder="sarah@company.com (for lead follow-ups)"
+                    value={formData.businessEmail}
+                    onChange={(e) => handleInputChange('businessEmail', e.target.value)}
+                    className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="linkedin" className="text-white/90">LinkedIn (Optional)</Label>
                   <Input
                     id="linkedin"
                     placeholder="https://linkedin.com/in/sarahverma"
                     value={formData.linkedin}
                     onChange={(e) => handleInputChange('linkedin', e.target.value)}
-                    className="bg-white/10 border-white/30 text-white placeholder:text-white/50"
+                    className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
                   />
                 </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="hearAboutUs" className="text-white/90">How did you hear about WOW Circle?</Label>
-                  <Select onValueChange={(value) => handleInputChange('hearAboutUs', value)}>
-                    <SelectTrigger className="bg-white/10 border-white/30 text-white">
-                      <SelectValue placeholder="Select source" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="linkedin">LinkedIn</SelectItem>
-                      <SelectItem value="colleague">Colleague referral</SelectItem>
-                      <SelectItem value="event">At an event</SelectItem>
-                      <SelectItem value="search">Google search</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Label htmlFor="instagram" className="text-white/90">Instagram (Optional)</Label>
+                  <Input
+                    id="instagram"
+                    placeholder="@yourcompany"
+                    value={formData.instagram}
+                    onChange={(e) => handleInputChange('instagram', e.target.value)}
+                    className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
+                  />
                 </div>
+
                 <div className="space-y-2">
-                  <Label className="text-white/90 flex items-center space-x-2">
-                    <Upload className="w-4 h-4" />
-                    <span>Company Brochure (Optional)</span>
-                  </Label>
-                  <div className="relative">
-                    <input
-                      type="file"
-                      accept=".pdf,.doc,.docx"
-                      onChange={(e) => handleFileUpload(e.target.files?.[0] || null)}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                    />
-                    <div className="bg-white/10 border-white/30 border-2 border-dashed rounded-lg p-4 text-center">
-                      <Upload className="w-6 h-6 mx-auto mb-2 text-white/70" />
-                      <p className="text-white/70 text-sm">
-                        {formData.brochure ? formData.brochure.name : "Tap to upload PDF or DOC"}
-                      </p>
-                    </div>
-                  </div>
+                  <Label htmlFor="twitter" className="text-white/90">X/Twitter (Optional)</Label>
+                  <Input
+                    id="twitter"
+                    placeholder="@yourcompany"
+                    value={formData.twitter}
+                    onChange={(e) => handleInputChange('twitter', e.target.value)}
+                    className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="website" className="text-white/90">Company Website (Optional)</Label>
+                  <Input
+                    id="website"
+                    placeholder="https://yourcompany.com"
+                    value={formData.website}
+                    onChange={(e) => handleInputChange('website', e.target.value)}
+                    className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
+                  />
                 </div>
               </>
             )}
@@ -346,7 +340,7 @@ const RegistrationScreen = ({ onComplete }: RegistrationScreenProps) => {
                 disabled={!isCurrentSectionValid()}
                 className="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-900 hover:from-cyan-300 hover:to-blue-400 font-semibold py-6 text-lg"
               >
-                {currentSection === sections.length - 1 ? "Enter Event Mode" : "Continue"}
+                {currentSection === sections.length - 1 ? "Complete Registration" : "Continue"}
               </Button>
               
               {currentSection > 0 && (
@@ -357,6 +351,20 @@ const RegistrationScreen = ({ onComplete }: RegistrationScreenProps) => {
                 >
                   Back
                 </Button>
+              )}
+
+              {currentSection === 0 && (
+                <div className="pt-4 text-center">
+                  <p className="text-white/60 text-sm">
+                    Already have an account?{' '}
+                    <button
+                      onClick={onSwitchToLogin}
+                      className="text-cyan-400 hover:text-cyan-300 underline"
+                    >
+                      Login
+                    </button>
+                  </p>
+                </div>
               )}
             </div>
           </CardContent>
