@@ -1,187 +1,126 @@
-
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { MessageSquare, Send, Edit, User, Building, Calendar, Check } from 'lucide-react';
+import { Mail, Send, Edit, Clock, Star } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 const FollowUpAssistant = () => {
-  const [selectedLead, setSelectedLead] = useState<any>(null);
+  const [selectedContact, setSelectedContact] = useState<any>(null);
   const [emailContent, setEmailContent] = useState('');
-  const [emailSubject, setEmailSubject] = useState('');
-  const [includeBranding, setIncludeBranding] = useState(true);
+  const [includeSignature, setIncludeSignature] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
 
-  const pendingLeads = [
+  const pendingFollowUps = [
     {
       id: 1,
-      name: "Dr. Rakesh Sharma",
-      company: "MedCore Pharmaceuticals",
-      designation: "Chief Pharmacist",
-      email: "rakesh.sharma@medcore.com",
-      event: "BioAsia Expo 2024",
-      capturedAt: "2 days ago",
-      notes: "Interested in new diabetes medication line. Wants product demo next week.",
-      tags: ["Hot Lead", "Decision Maker"],
-      priority: "High"
-    },
-    {
-      id: 2,
-      name: "Priya Patel",
-      company: "HealthFirst Distributors",
-      designation: "Regional Manager",
+      name: "Dr. Priya Patel",
+      company: "HealthFirst Clinic",
       email: "priya@healthfirst.com",
       event: "BioAsia Expo 2024",
-      capturedAt: "1 day ago",
-      notes: "Looking for exclusive distribution rights in Western region.",
-      tags: ["Warm Lead", "Distributor"],
-      priority: "Medium"
-    },
-    {
-      id: 3,
-      name: "Dr. Sarah Johnson",
-      company: "Metro Hospital",
-      designation: "Head of Procurement",
-      email: "sarah.j@metrohospital.com",
-      event: "BioAsia Expo 2024",
-      capturedAt: "3 hours ago",
-      notes: "Interested in bulk purchase for hospital chain.",
-      tags: ["Cold Lead", "Doctor"],
-      priority: "Low"
-    }
-  ];
+      notes: "Interested in diabetes management solutions",
+      priority: "High",
+      capturedAt: "2 hours ago",
+      suggestedEmail: `Hi Dr. Patel,
 
-  const generateEmail = (lead: any) => {
-    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-    const businessEmail = userData.businessEmail || userData.email || 'your@company.com';
-    const companyName = userData.companyName || 'Your Company';
-    const fullName = userData.fullName || 'Your Name';
-    
-    const subject = `Following up from ${lead.event} - ${companyName}`;
-    const content = `Hi ${lead.name},
+It was great meeting you at the BioAsia Expo earlier today! I really enjoyed our conversation about diabetes management solutions and how they could benefit your patients at HealthFirst Clinic.
 
-It was great meeting you at ${lead.event}! I enjoyed our conversation about ${lead.company}'s initiatives.
+As promised, I've attached our latest product overview focusing on the diabetes care solutions we discussed. I think you'll find the patient outcome data particularly interesting.
 
-${lead.notes ? `As we discussed, ${lead.notes.toLowerCase()}` : 'I believe our solutions could be a great fit for your needs.'}
-
-I'd love to schedule a brief call this week to explore how we can support your objectives. Are you available for a 30-minute conversation?
+Would you be available for a brief call next week to discuss how we might support your clinic's diabetes management program?
 
 Best regards,
-${fullName}
-${companyName}`;
+Sarah Verma
+Sales Lead, PharmaTech Solutions`
+    },
+    // ... keep existing code (other contacts)
+  ];
 
-    return { subject, content };
+  const generateWowCircleSignature = () => {
+    return `
+
+---
+Sent via WOW Circle — the tool that remembers your networking better than you do.
+Get early access → www.wowcircle.com`;
   };
 
-  const handleSelectLead = (lead: any) => {
-    setSelectedLead(lead);
-    const { subject, content } = generateEmail(lead);
-    setEmailSubject(subject);
-    setEmailContent(content);
+  const handleSelectContact = (contact: any) => {
+    setSelectedContact(contact);
+    const baseEmail = contact.suggestedEmail;
+    const finalEmail = includeSignature ? baseEmail + generateWowCircleSignature() : baseEmail;
+    setEmailContent(finalEmail);
     setIsEditing(false);
   };
 
   const handleSendEmail = () => {
-    if (!selectedLead) return;
-
-    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-    const businessEmail = userData.businessEmail || userData.email || 'your@company.com';
-    
-    let finalContent = emailContent;
-    
-    if (includeBranding) {
-      finalContent += `\n\n---\nSent via WOW Circle — the tool that remembers your networking better than you do.\nGet early access → www.wowcircle.com`;
-    }
-
-    // Create mailto link with business email
-    const emailUrl = `mailto:${selectedLead.email}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(finalContent)}&from=${encodeURIComponent(businessEmail)}`;
-    
-    // For demonstration, we'll also show a preview
-    console.log('Email Preview:', {
-      from: businessEmail,
-      to: selectedLead.email,
-      subject: emailSubject,
-      body: finalContent
-    });
-
-    window.open(emailUrl);
-    
+    // In a real app, this would integrate with email service
     toast({
-      title: "Email Opened",
-      description: `Follow-up email to ${selectedLead.name}. Make sure to review before sending!`
+      title: "Email Sent!",
+      description: `Follow-up sent to ${selectedContact.name} via your connected email`,
     });
+    
+    // Remove from pending list or mark as completed
+    setSelectedContact(null);
+    setEmailContent('');
   };
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'High': return 'bg-red-100 text-red-800 border-red-200';
-      case 'Medium': return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'Low': return 'bg-blue-100 text-blue-800 border-blue-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+  const handleToggleSignature = (checked: boolean) => {
+    setIncludeSignature(checked);
+    if (selectedContact) {
+      const baseEmail = selectedContact.suggestedEmail;
+      const finalEmail = checked ? baseEmail + generateWowCircleSignature() : baseEmail;
+      setEmailContent(finalEmail);
     }
   };
 
   return (
-    <div className="p-4 pb-20 min-h-screen bg-gray-50">
-      {/* Header */}
+    <div className="p-4 pb-20 min-h-screen bg-gradient-to-b from-slate-50 to-white">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-800 mb-2 flex items-center">
-          <MessageSquare className="w-6 h-6 mr-2" />
-          Follow-Up Assistant
-        </h1>
-        <p className="text-gray-600">{pendingLeads.length} contacts pending follow-up</p>
+        <h1 className="text-2xl font-bold text-slate-800">Follow-Up Assistant</h1>
+        <p className="text-slate-600">AI-powered email templates for your contacts</p>
       </div>
 
-      <div className="grid grid-cols-1 gap-6">
-        {/* Pending Leads */}
-        <Card>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Pending Follow-ups */}
+        <Card className="border-slate-200">
           <CardHeader>
-            <CardTitle className="text-lg">Pending Follow-ups</CardTitle>
+            <CardTitle className="flex items-center space-x-2 text-slate-800">
+              <Clock className="w-5 h-5" />
+              <span>Pending Follow-ups</span>
+              <Badge className="bg-cyan-100 text-cyan-800">{pendingFollowUps.length}</Badge>
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {pendingLeads.map((lead) => (
-                <div
-                  key={lead.id}
-                  onClick={() => handleSelectLead(lead)}
-                  className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                    selectedLead?.id === lead.id
-                      ? 'border-cyan-300 bg-cyan-50'
-                      : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+              {pendingFollowUps.map((contact) => (
+                <div 
+                  key={contact.id}
+                  className={`p-4 rounded-lg border cursor-pointer transition-all ${
+                    selectedContact?.id === contact.id 
+                      ? 'border-cyan-300 bg-cyan-50' 
+                      : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
                   }`}
+                  onClick={() => handleSelectContact(contact)}
                 >
-                  <div className="flex items-start justify-between mb-2">
+                  <div className="flex justify-between items-start mb-2">
                     <div>
-                      <h3 className="font-semibold text-gray-800">{lead.name}</h3>
-                      <p className="text-sm text-gray-600 flex items-center">
-                        <Building className="w-3 h-3 mr-1" />
-                        {lead.company} • {lead.designation}
-                      </p>
+                      <h3 className="font-semibold text-slate-800">{contact.name}</h3>
+                      <p className="text-sm text-slate-600">{contact.company}</p>
                     </div>
-                    <div className="text-right">
-                      <Badge className={getPriorityColor(lead.priority)}>
-                        {lead.priority}
+                    <div className="flex items-center space-x-1">
+                      {contact.priority === 'High' && <Star className="w-4 h-4 text-amber-500" />}
+                      <Badge 
+                        variant={contact.priority === 'High' ? 'default' : 'secondary'}
+                        className={contact.priority === 'High' ? 'bg-amber-100 text-amber-800' : ''}
+                      >
+                        {contact.priority}
                       </Badge>
-                      <p className="text-xs text-gray-500 mt-1">{lead.capturedAt}</p>
                     </div>
                   </div>
-                  
-                  <p className="text-sm text-gray-600 mb-2">{lead.notes}</p>
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="flex space-x-1">
-                      {lead.tags.map((tag: string) => (
-                        <Badge key={tag} variant="secondary" className="text-xs">
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
-                    <p className="text-xs text-gray-500">{lead.event}</p>
-                  </div>
+                  <p className="text-sm text-slate-600 mb-2">{contact.notes}</p>
+                  <p className="text-xs text-slate-500">{contact.event} • {contact.capturedAt}</p>
                 </div>
               ))}
             </div>
@@ -189,95 +128,86 @@ ${companyName}`;
         </Card>
 
         {/* Email Composer */}
-        {selectedLead && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center justify-between">
-                <span>Compose Follow-up Email</span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setIsEditing(!isEditing)}
-                >
-                  <Edit className="w-4 h-4 mr-1" />
-                  {isEditing ? 'Preview' : 'Edit'}
-                </Button>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Email Details */}
-              <div className="bg-gray-50 p-3 rounded-lg">
-                <div className="grid grid-cols-2 gap-4 text-sm">
+        <Card className="border-slate-200">
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2 text-slate-800">
+              <Mail className="w-5 h-5" />
+              <span>Email Composer</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {selectedContact ? (
+              <div className="space-y-4">
+                <div className="bg-slate-50 p-3 rounded-lg">
+                  <p className="text-sm text-slate-600">
+                    <strong>To:</strong> {selectedContact.email}
+                  </p>
+                  <p className="text-sm text-slate-600">
+                    <strong>Subject:</strong> Great meeting you at {selectedContact.event}
+                  </p>
+                </div>
+
+                {/* Signature Toggle */}
+                <div className="flex items-center justify-between p-3 bg-cyan-50 rounded-lg border border-cyan-200">
                   <div>
-                    <strong>To:</strong> {selectedLead.email}
+                    <p className="text-sm font-medium text-cyan-800">Include WOW Circle Signature</p>
+                    <p className="text-xs text-cyan-600">Help grow our community & show you're using cutting-edge tools</p>
                   </div>
-                  <div>
-                    <strong>From:</strong> {JSON.parse(localStorage.getItem('userData') || '{}').businessEmail || 'your@company.com'}
+                  <Switch 
+                    checked={includeSignature}
+                    onCheckedChange={handleToggleSignature}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <label className="text-sm font-medium text-slate-700">Email Content</label>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIsEditing(!isEditing)}
+                      className="text-slate-600 hover:text-slate-800"
+                    >
+                      <Edit className="w-4 h-4 mr-1" />
+                      {isEditing ? 'Preview' : 'Edit'}
+                    </Button>
                   </div>
+                  
+                  {isEditing ? (
+                    <Textarea
+                      value={emailContent}
+                      onChange={(e) => setEmailContent(e.target.value)}
+                      className="min-h-[300px] text-sm"
+                      placeholder="Edit your email content..."
+                    />
+                  ) : (
+                    <div className="bg-white border border-slate-200 rounded-lg p-4 min-h-[300px] text-sm whitespace-pre-wrap">
+                      {emailContent}
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex space-x-3">
+                  <Button
+                    onClick={handleSendEmail}
+                    className="flex-1 bg-gradient-to-r from-cyan-400 to-blue-500 text-white hover:from-cyan-300 hover:to-blue-400"
+                  >
+                    <Send className="w-4 h-4 mr-2" />
+                    Send Email
+                  </Button>
+                  <Button variant="outline" className="border-slate-300 text-slate-700">
+                    Save Draft
+                  </Button>
                 </div>
               </div>
-
-              {/* Subject Line */}
-              <div className="space-y-2">
-                <Label htmlFor="subject">Subject Line</Label>
-                <Input
-                  id="subject"
-                  value={emailSubject}
-                  onChange={(e) => setEmailSubject(e.target.value)}
-                  disabled={!isEditing}
-                />
+            ) : (
+              <div className="text-center py-12">
+                <Mail className="w-12 h-12 text-slate-400 mx-auto mb-4" />
+                <p className="text-slate-600">Select a contact to compose your follow-up email</p>
               </div>
-
-              {/* Email Content */}
-              <div className="space-y-2">
-                <Label htmlFor="content">Email Content</Label>
-                <Textarea
-                  id="content"
-                  value={emailContent}
-                  onChange={(e) => setEmailContent(e.target.value)}
-                  rows={12}
-                  disabled={!isEditing}
-                  className="font-mono text-sm"
-                />
-              </div>
-
-              {/* Branding Option */}
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="includeBranding"
-                  checked={includeBranding}
-                  onChange={(e) => setIncludeBranding(e.target.checked)}
-                />
-                <Label htmlFor="includeBranding" className="text-sm">
-                  Include WOW Circle signature (helps grow our community!)
-                </Label>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex space-x-3 pt-4">
-                <Button
-                  onClick={handleSendEmail}
-                  className="flex-1 bg-gradient-to-r from-cyan-400 to-blue-500"
-                >
-                  <Send className="w-4 h-4 mr-2" />
-                  Send Email
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    const { subject, content } = generateEmail(selectedLead);
-                    setEmailSubject(subject);
-                    setEmailContent(content);
-                  }}
-                  className="flex-1"
-                >
-                  Reset to Template
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
