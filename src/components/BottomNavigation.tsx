@@ -1,6 +1,6 @@
 
 import { Button } from '@/components/ui/button';
-import { Badge, User, MessageSquare, Calendar, Settings } from 'lucide-react';
+import { Camera, Users, MessageSquare, BarChart3, User } from 'lucide-react';
 
 interface BottomNavigationProps {
   currentView: string;
@@ -9,35 +9,15 @@ interface BottomNavigationProps {
 
 const BottomNavigation = ({ currentView, onViewChange }: BottomNavigationProps) => {
   const navItems = [
-    {
-      id: 'capture',
-      label: 'Capture',
-      icon: Badge,
-    },
-    {
-      id: 'contacts',
-      label: 'Contacts',
-      icon: User,
-    },
-    {
-      id: 'followup',
-      label: 'Follow-up',
-      icon: MessageSquare,
-    },
-    {
-      id: 'roi',
-      label: 'ROI',
-      icon: Calendar,
-    },
-    {
-      id: 'team-manage',
-      label: 'Team',
-      icon: Settings,
-    }
+    { id: 'capture', label: 'Capture', icon: Camera },
+    { id: 'contacts', label: 'Contacts', icon: Users },
+    { id: 'followup', label: 'Follow-up', icon: MessageSquare },
+    { id: 'roi', label: 'ROI', icon: BarChart3 },
+    { id: 'account', label: 'Account', icon: User }
   ];
 
   return (
-    <div className="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-md bg-white border-t border-gray-200 px-4 py-2">
+    <div className="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-md bg-white border-t border-gray-200 px-2 py-2">
       <div className="flex justify-around">
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -49,12 +29,14 @@ const BottomNavigation = ({ currentView, onViewChange }: BottomNavigationProps) 
               variant="ghost"
               size="sm"
               onClick={() => onViewChange(item.id)}
-              className={`flex flex-col items-center space-y-1 h-12 px-2 ${
-                isActive ? 'text-blue-600 bg-blue-50' : 'text-gray-600'
+              className={`flex flex-col items-center space-y-1 px-2 py-3 rounded-lg transition-colors ${
+                isActive 
+                  ? 'bg-blue-50 text-blue-600' 
+                  : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
               }`}
             >
               <Icon className="w-5 h-5" />
-              <span className="text-xs">{item.label}</span>
+              <span className="text-xs font-medium">{item.label}</span>
             </Button>
           );
         })}

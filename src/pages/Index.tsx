@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import LoginScreen from '../components/LoginScreen';
 import RegistrationScreen from '../components/RegistrationScreen';
@@ -7,11 +8,12 @@ import ContactDashboard from '../components/ContactDashboard';
 import FollowUpAssistant from '../components/FollowUpAssistant';
 import ROIDashboard from '../components/ROIDashboard';
 import TeamCollaboration from '../components/TeamCollaboration';
-import TeamManagement from '../components/TeamManagement';
+import AccountSettings from '../components/AccountSettings';
 import BottomNavigation from '../components/BottomNavigation';
 import SupportChat from '../components/SupportChat';
 import { Toaster } from '@/components/ui/toaster';
 import { toast } from '@/hooks/use-toast';
+import { coins } from 'lucide-react';
 
 const Index = () => {
   const [hasLoggedIn, setHasLoggedIn] = useState(false);
@@ -20,6 +22,7 @@ const Index = () => {
   const [isEventModeActive, setIsEventModeActive] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [isGuestMode, setIsGuestMode] = useState(false);
+  const [coinBalance, setCoinBalance] = useState(150);
 
   useEffect(() => {
     const loginComplete = localStorage.getItem('loginComplete');
@@ -50,6 +53,13 @@ const Index = () => {
     localStorage.setItem('loginComplete', 'true');
     localStorage.setItem('userData', JSON.stringify(userData));
     setHasLoggedIn(true);
+    
+    // Welcome new users with coins
+    setCoinBalance(200);
+    toast({
+      title: "🎉 You've received 200 WowCoins with your registration!",
+      description: "Start capturing leads with AI Snap technology.",
+    });
   };
 
   const completeOnboarding = () => {
@@ -68,7 +78,7 @@ const Index = () => {
     setHasLoggedIn(true);
     toast({
       title: "Guest Mode Activated",
-      description: "You can explore the app. Some features may be limited.",
+      description: "14-day free trial started. Some features may be limited.",
     });
   };
 
@@ -108,8 +118,8 @@ const Index = () => {
         return <ROIDashboard />;
       case 'team':
         return <TeamCollaboration />;
-      case 'team-manage':
-        return <TeamManagement />;
+      case 'account':
+        return <AccountSettings />;
       default:
         return <LeadCaptureScreen isEventModeActive={isEventModeActive} />;
     }
@@ -118,17 +128,26 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-slate-50">
       <div className="max-w-md mx-auto bg-white min-h-screen shadow-xl relative">
+        {/* Header with Coin Balance */}
+        <div className="flex justify-between items-center p-4 bg-white border-b">
+          <div className="text-lg font-semibold text-gray-800">WOW Circle</div>
+          <div className="flex items-center space-x-2">
+            <coins className="w-4 h-4 text-yellow-600" />
+            <span className="text-sm font-medium text-gray-700">{coinBalance}</span>
+          </div>
+        </div>
+
         {/* Event Mode Banner */}
         {isEventModeActive && (
           <div className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white text-center py-2 text-sm font-medium">
-            🟢 Event Mode Active - 3 days left in free trial
+            🟢 Event Mode Active - 12 days left in free trial
           </div>
         )}
         
         {/* Guest Mode Banner */}
         {isGuestMode && !isEventModeActive && (
           <div className="bg-gradient-to-r from-orange-500 to-red-600 text-white text-center py-2 text-sm font-medium">
-            👤 Guest Mode - Limited Features Available
+            👤 Guest Mode - 12 days free trial remaining
           </div>
         )}
         

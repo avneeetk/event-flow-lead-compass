@@ -16,9 +16,9 @@ interface RegistrationScreenProps {
 
 const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenProps) => {
   const [formData, setFormData] = useState({
-    // Section 1: Create Account
+    // Section 1: Account Setup
     name: '',
-    email: '',
+    businessEmail: '',
     password: '',
     confirmPassword: '',
     // Section 2: Business Information
@@ -26,14 +26,16 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
     industry: '',
     city: '',
     role: '',
-    // Section 3: Communication Channels
+    website: '',
+    alternateEmail: '',
+    // Section 3: Communication & Social
     whatsappEnabled: false,
     whatsappNumber: '',
     linkedin: '',
     instagram: '',
-    twitter: '',
-    website: '',
-    businessEmail: ''
+    facebook: '',
+    meetingLink: '',
+    brochureLink: ''
   });
 
   const [currentSection, setCurrentSection] = useState(0);
@@ -44,24 +46,26 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
   const sections = [
     {
       title: "Create Account",
+      subtitle: "Login using your business email",
       icon: <User className="w-6 h-6" />,
-      fields: ['name', 'email', 'password', 'confirmPassword']
+      fields: ['name', 'businessEmail', 'password', 'confirmPassword']
     },
     {
       title: "Business Information", 
+      subtitle: "Tell us about your company",
       icon: <Building className="w-6 h-6" />,
-      fields: ['company', 'industry', 'city', 'role']
+      fields: ['company', 'industry', 'city', 'role', 'website', 'alternateEmail']
     },
     {
-      title: "Communication Channels",
+      title: "Connect & Share",
+      subtitle: "Optional, but helps improve discovery & reach",
       icon: <Globe className="w-6 h-6" />,
-      fields: [] // All optional fields
+      fields: []
     }
   ];
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    // Clear validation errors when user starts typing
     if (validationErrors.length > 0) {
       setValidationErrors([]);
     }
@@ -69,12 +73,10 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
 
   const validateCurrentSection = () => {
     const errors: string[] = [];
-    const currentFields = sections[currentSection].fields;
     
     if (currentSection === 0) {
-      // Section 1: All fields required + password match
       if (!formData.name.trim()) errors.push("Full Name is required");
-      if (!formData.email.trim()) errors.push("Email Address is required");
+      if (!formData.businessEmail.trim()) errors.push("Business Email is required");
       if (!formData.password) errors.push("Password is required");
       if (!formData.confirmPassword) errors.push("Confirm Password is required");
       if (formData.password && formData.password.length < 6) errors.push("Password must be at least 6 characters");
@@ -82,7 +84,6 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
         errors.push("Passwords don't match");
       }
     } else if (currentSection === 1) {
-      // Section 2: All fields required
       if (!formData.company.trim()) errors.push("Company Name is required");
       if (!formData.industry) errors.push("Industry is required");
       if (!formData.city.trim()) errors.push("City is required");
@@ -94,19 +95,14 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
   };
 
   const isCurrentSectionValid = () => {
-    const currentFields = sections[currentSection].fields;
-    
     if (currentSection === 0) {
-      // Section 1: All fields required + password match
-      const requiredValid = currentFields.every(field => formData[field as keyof typeof formData]);
+      const requiredValid = formData.name && formData.businessEmail && formData.password && formData.confirmPassword;
       const passwordMatch = formData.password === formData.confirmPassword;
       const passwordLength = formData.password.length >= 6;
       return requiredValid && passwordMatch && passwordLength;
     } else if (currentSection === 1) {
-      // Section 2: All fields required
-      return currentFields.every(field => formData[field as keyof typeof formData]);
+      return formData.company && formData.industry && formData.city && formData.role;
     } else {
-      // Section 3: All optional
       return true;
     }
   };
@@ -123,8 +119,8 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
 
   const completeRegistration = () => {
     toast({
-      title: "Registration Complete!",
-      description: "Welcome to WOW Circle. Let's set up your event mode.",
+      title: "Profile created successfully! 🎉",
+      description: "Welcome to WOW Circle. Starting your 14-day free trial.",
     });
     onComplete(formData);
   };
@@ -154,13 +150,13 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
               </div>
               <div>
                 <CardTitle className="text-xl">{currentSectionData.title}</CardTitle>
-                <p className="text-white/80 text-sm">Step {currentSection + 1} of {sections.length}</p>
+                <p className="text-white/80 text-sm">{currentSectionData.subtitle}</p>
               </div>
             </div>
           </CardHeader>
           
           <CardContent className="space-y-4">
-            {/* Section 1: Create Account */}
+            {/* Section 1: Account Setup */}
             {currentSection === 0 && (
               <>
                 <div className="space-y-2">
@@ -174,15 +170,16 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-white/90">Email Address *</Label>
+                  <Label htmlFor="businessEmail" className="text-white/90">Business Email * (Login Credential)</Label>
                   <Input
-                    id="email"
+                    id="businessEmail"
                     type="email"
                     placeholder="sarah@pharmatech.com"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
+                    value={formData.businessEmail}
+                    onChange={(e) => handleInputChange('businessEmail', e.target.value)}
                     className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
                   />
+                  <p className="text-white/60 text-xs">This will be your login email for WOW Circle</p>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="password" className="text-white/90">Password * (min 6 characters)</Label>
@@ -280,14 +277,35 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
                     className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
                   />
                 </div>
+                <div className="space-y-2">
+                  <Label htmlFor="website" className="text-white/90">Company Website</Label>
+                  <Input
+                    id="website"
+                    placeholder="https://pharmatech.com"
+                    value={formData.website}
+                    onChange={(e) => handleInputChange('website', e.target.value)}
+                    className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
+                  />
+                  <p className="text-white/50 text-xs">Optional, but helps improve discovery & reach</p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="alternateEmail" className="text-white/90">Alternate Email for Lead Communication</Label>
+                  <Input
+                    id="alternateEmail"
+                    type="email"
+                    placeholder="sarah.leads@pharmatech.com"
+                    value={formData.alternateEmail}
+                    onChange={(e) => handleInputChange('alternateEmail', e.target.value)}
+                    className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
+                  />
+                  <p className="text-white/50 text-xs">Used for automated follow-up emails (optional)</p>
+                </div>
               </>
             )}
 
-            {/* Section 3: Communication Channels */}
+            {/* Section 3: Communication & Social */}
             {currentSection === 2 && (
               <>
-                <p className="text-white/80 text-sm mb-4">All fields in this section are optional</p>
-                
                 <div className="space-y-4">
                   <div className="flex items-center space-x-3">
                     <Switch
@@ -307,19 +325,7 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="businessEmail" className="text-white/90">Business Email</Label>
-                  <Input
-                    id="businessEmail"
-                    type="email"
-                    placeholder="sarah@company.com (for lead follow-ups)"
-                    value={formData.businessEmail}
-                    onChange={(e) => handleInputChange('businessEmail', e.target.value)}
-                    className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="linkedin" className="text-white/90">LinkedIn</Label>
+                  <Label htmlFor="linkedin" className="text-white/90">LinkedIn Profile</Label>
                   <Input
                     id="linkedin"
                     placeholder="https://linkedin.com/in/sarahverma"
@@ -341,25 +347,38 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="twitter" className="text-white/90">X/Twitter</Label>
+                  <Label htmlFor="facebook" className="text-white/90">Facebook</Label>
                   <Input
-                    id="twitter"
+                    id="facebook"
                     placeholder="@yourcompany"
-                    value={formData.twitter}
-                    onChange={(e) => handleInputChange('twitter', e.target.value)}
+                    value={formData.facebook}
+                    onChange={(e) => handleInputChange('facebook', e.target.value)}
                     className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="website" className="text-white/90">Company Website</Label>
+                  <Label htmlFor="meetingLink" className="text-white/90">Meeting Link</Label>
                   <Input
-                    id="website"
-                    placeholder="https://yourcompany.com"
-                    value={formData.website}
-                    onChange={(e) => handleInputChange('website', e.target.value)}
+                    id="meetingLink"
+                    placeholder="calendly.com/sarah-verma or meet.google.com/abc"
+                    value={formData.meetingLink}
+                    onChange={(e) => handleInputChange('meetingLink', e.target.value)}
                     className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
                   />
+                  <p className="text-white/50 text-xs">Google Meet, Zoom, or Calendly link</p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="brochureLink" className="text-white/90">Business Brochure/PDF</Label>
+                  <Input
+                    id="brochureLink"
+                    placeholder="https://drive.google.com/brochure.pdf"
+                    value={formData.brochureLink}
+                    onChange={(e) => handleInputChange('brochureLink', e.target.value)}
+                    className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
+                  />
+                  <p className="text-white/50 text-xs">Link to company brochure or product catalog</p>
                 </div>
               </>
             )}

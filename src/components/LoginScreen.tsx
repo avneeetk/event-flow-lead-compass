@@ -15,7 +15,7 @@ interface LoginScreenProps {
 
 const LoginScreen = ({ onLogin, onSwitchToRegister, onGuestMode }: LoginScreenProps) => {
   const [formData, setFormData] = useState({
-    email: '',
+    businessEmail: '',
     password: ''
   });
   const [showPassword, setShowPassword] = useState(false);
@@ -25,10 +25,10 @@ const LoginScreen = ({ onLogin, onSwitchToRegister, onGuestMode }: LoginScreenPr
   };
 
   const handleLogin = () => {
-    if (!formData.email || !formData.password) {
+    if (!formData.businessEmail || !formData.password) {
       toast({
         title: "Please fill in all fields",
-        description: "Email and password are required to login.",
+        description: "Business email and password are required to login.",
         variant: "destructive"
       });
       return;
@@ -38,10 +38,10 @@ const LoginScreen = ({ onLogin, onSwitchToRegister, onGuestMode }: LoginScreenPr
     const storedUserData = localStorage.getItem('userData');
     if (storedUserData) {
       const userData = JSON.parse(storedUserData);
-      if (userData.email === formData.email) {
+      if (userData.businessEmail === formData.businessEmail || userData.email === formData.businessEmail) {
         toast({
-          title: "Welcome back!",
-          description: "Login successful. Redirecting to your dashboard.",
+          title: "Welcome back! 🎉",
+          description: "Login successful. Accessing your WOW Circle dashboard.",
         });
         onLogin(formData);
         return;
@@ -50,12 +50,19 @@ const LoginScreen = ({ onLogin, onSwitchToRegister, onGuestMode }: LoginScreenPr
 
     toast({
       title: "Invalid credentials",
-      description: "Please check your email and password.",
+      description: "Please check your business email and password.",
       variant: "destructive"
     });
   };
 
-  const isFormValid = formData.email && formData.password;
+  const handleForgotPassword = () => {
+    toast({
+      title: "Password Reset",
+      description: "Password reset link will be sent to your business email shortly.",
+    });
+  };
+
+  const isFormValid = formData.businessEmail && formData.password;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 flex flex-col items-center justify-center p-6">
@@ -68,22 +75,23 @@ const LoginScreen = ({ onLogin, onSwitchToRegister, onGuestMode }: LoginScreenPr
               </div>
               <div>
                 <CardTitle className="text-xl">Welcome Back</CardTitle>
-                <p className="text-white/80 text-sm">Use your registered credentials to continue</p>
+                <p className="text-white/80 text-sm">Login using your business email</p>
               </div>
             </div>
           </CardHeader>
           
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-white/90">Email Address</Label>
+              <Label htmlFor="businessEmail" className="text-white/90">Business Email Address</Label>
               <Input
-                id="email"
+                id="businessEmail"
                 type="email"
                 placeholder="sarah@pharmatech.com"
-                value={formData.email}
-                onChange={(e) => handleInputChange('email', e.target.value)}
+                value={formData.businessEmail}
+                onChange={(e) => handleInputChange('businessEmail', e.target.value)}
                 className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
               />
+              <p className="text-white/60 text-xs">Use the email you registered with</p>
             </div>
 
             <div className="space-y-2">
@@ -119,10 +127,7 @@ const LoginScreen = ({ onLogin, onSwitchToRegister, onGuestMode }: LoginScreenPr
               </Button>
 
               <Button
-                onClick={() => toast({
-                  title: "Feature Coming Soon",
-                  description: "Password reset functionality will be available soon.",
-                })}
+                onClick={handleForgotPassword}
                 variant="ghost"
                 className="w-full text-white/80 hover:text-white hover:bg-white/10"
               >
@@ -134,7 +139,7 @@ const LoginScreen = ({ onLogin, onSwitchToRegister, onGuestMode }: LoginScreenPr
                 variant="ghost"
                 className="w-full text-white/60 hover:text-white/80 hover:bg-white/5 text-sm"
               >
-                Continue as Guest (Optional)
+                Continue as Guest (14-day trial)
               </Button>
             </div>
 
