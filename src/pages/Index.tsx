@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import LoginScreen from '../components/LoginScreen';
 import RegistrationScreen from '../components/RegistrationScreen';
@@ -13,7 +12,7 @@ import BottomNavigation from '../components/BottomNavigation';
 import SupportChat from '../components/SupportChat';
 import { Toaster } from '@/components/ui/toaster';
 import { toast } from '@/hooks/use-toast';
-import { coins } from 'lucide-react';
+import { Coins } from 'lucide-react';
 
 const Index = () => {
   const [hasLoggedIn, setHasLoggedIn] = useState(false);
@@ -132,7 +131,7 @@ const Index = () => {
         <div className="flex justify-between items-center p-4 bg-white border-b">
           <div className="text-lg font-semibold text-gray-800">WOW Circle</div>
           <div className="flex items-center space-x-2">
-            <coins className="w-4 h-4 text-yellow-600" />
+            <Coins className="w-4 h-4 text-yellow-600" />
             <span className="text-sm font-medium text-gray-700">{coinBalance}</span>
           </div>
         </div>

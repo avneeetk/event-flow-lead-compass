@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,7 +6,7 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { User, Users, coins, Lock } from 'lucide-react';
+import { User, Users, Coins, Lock } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 const AccountSettings = () => {
@@ -58,7 +57,7 @@ const AccountSettings = () => {
         <h1 className="text-2xl font-bold text-gray-800 mb-2">Account Settings</h1>
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">
-            <coins className="w-4 h-4 text-yellow-600" />
+            <Coins className="w-4 h-4 text-yellow-600" />
             <span className="text-sm font-medium">{coinBalance} WowCoins</span>
           </div>
           {!isProUser && (
@@ -233,7 +232,7 @@ const AccountSettings = () => {
               <div className="space-y-6">
                 <div className="text-center p-6 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg">
                   <div className="flex items-center justify-center space-x-2 mb-2">
-                    <coins className="w-8 h-8 text-yellow-600" />
+                    <Coins className="w-8 h-8 text-yellow-600" />
                     <span className="text-3xl font-bold text-yellow-600">{coinBalance}</span>
                   </div>
                   <p className="text-gray-600">Available WowCoins</p>

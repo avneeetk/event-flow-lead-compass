@@ -1,9 +1,8 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { MessageSquare, Mic, Plus, HelpCircle } from 'lucide-react';
+import { MessageSquare, Mic, Plus, HelpCircle, Crown } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import AISnapCapture from './AISnapCapture';
 import LeadEditModal from './LeadEditModal';
@@ -19,6 +18,9 @@ const LeadCaptureScreen = ({ isEventModeActive }: LeadCaptureScreenProps) => {
   const [capturedLead, setCapturedLead] = useState<any>(null);
   const [isOfflineMode, setIsOfflineMode] = useState(true);
   const [showWalkthrough, setShowWalkthrough] = useState(false);
+  const [coinBalance, setCoinBalance] = useState(0); // Free trial users start with 0 coins
+  const [isProUser, setIsProUser] = useState(false);
+  const [trialDaysLeft, setTrialDaysLeft] = useState(12);
 
   useEffect(() => {
     // Check if user should see walkthrough
@@ -62,6 +64,13 @@ const LeadCaptureScreen = ({ isEventModeActive }: LeadCaptureScreenProps) => {
     });
   };
 
+  const handleUpgrade = () => {
+    toast({
+      title: "Upgrade to WowPro",
+      description: "Unlock Smart Reports & Team Delegation features.",
+    });
+  };
+
   return (
     <div className="p-4 pb-20 min-h-screen bg-gradient-to-b from-slate-50 to-white">
       {/* Header with status */}
@@ -86,6 +95,29 @@ const LeadCaptureScreen = ({ isEventModeActive }: LeadCaptureScreenProps) => {
           </Button>
         </div>
       </div>
+
+      {/* Free Trial Upgrade Banner */}
+      {!isProUser && (
+        <Card className="mb-6 bg-gradient-to-r from-orange-50 to-yellow-50 border-orange-200">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="flex items-center space-x-2 mb-1">
+                  <Crown className="w-4 h-4 text-orange-600" />
+                  <span className="font-medium text-orange-800">Free Trial</span>
+                  <Badge variant="outline" className="text-orange-600 border-orange-300">
+                    {trialDaysLeft} days left
+                  </Badge>
+                </div>
+                <p className="text-sm text-orange-700">Get unlimited coins & features</p>
+              </div>
+              <Button onClick={handleUpgrade} size="sm" className="bg-orange-600 hover:bg-orange-700">
+                Upgrade to WowPro
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Stats Card */}
       <Card className="mb-6 bg-gradient-to-r from-slate-800 to-slate-700 text-white">
@@ -113,7 +145,11 @@ const LeadCaptureScreen = ({ isEventModeActive }: LeadCaptureScreenProps) => {
 
       {/* AI Snap Capture */}
       <div className="mb-6">
-        <AISnapCapture onCapture={handleLeadCapture} />
+        <AISnapCapture 
+          onCapture={handleLeadCapture} 
+          coinBalance={coinBalance}
+          isProUser={isProUser}
+        />
       </div>
 
       {/* Quick Actions */}

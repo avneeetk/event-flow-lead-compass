@@ -2,16 +2,21 @@
 import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Camera, Upload, Loader2 } from 'lucide-react';
+import { Camera, Upload, Loader2, Lock, Coins } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
 interface AISnapCaptureProps {
   onCapture: (extractedData: any) => void;
+  coinBalance?: number;
+  isProUser?: boolean;
 }
 
-const AISnapCapture = ({ onCapture }: AISnapCaptureProps) => {
+const AISnapCapture = ({ onCapture, coinBalance = 0, isProUser = false }: AISnapCaptureProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const canUseAISnap = isProUser || coinBalance >= 2;
 
   const simulateAIExtraction = (imageFile: File) => {
     setIsProcessing(true);
@@ -51,6 +56,15 @@ const AISnapCapture = ({ onCapture }: AISnapCaptureProps) => {
   };
 
   const handleCameraClick = () => {
+    if (!canUseAISnap) {
+      toast({
+        title: "AI Snap requires WowCoins",
+        description: `AI Snap requires 2 WowCoins per scan. You have ${coinBalance} coins left. Upgrade to continue.`,
+        variant: "destructive"
+      });
+      return;
+    }
+
     // In a real app, this would open the camera
     // For demo, we'll simulate with file input
     fileInputRef.current?.click();
@@ -58,7 +72,7 @@ const AISnapCapture = ({ onCapture }: AISnapCaptureProps) => {
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
+    if (file && canUseAISnap) {
       handleImageCapture(file);
     }
   };
@@ -107,17 +121,41 @@ const AISnapCapture = ({ onCapture }: AISnapCaptureProps) => {
         <CardContent className="p-6">
           <Button
             onClick={handleCameraClick}
-            className="w-full h-24 text-xl font-semibold bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 transition-all duration-300 transform hover:scale-105"
+            disabled={!canUseAISnap}
+            className={`w-full h-24 text-xl font-semibold transition-all duration-300 transform hover:scale-105 ${
+              canUseAISnap 
+                ? "bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400" 
+                : "bg-gray-300 text-gray-500 cursor-not-allowed"
+            }`}
           >
             <div className="flex items-center space-x-3">
+              {!canUseAISnap && <Lock className="w-6 h-6" />}
               <Camera className="w-8 h-8" />
-              <span>AI Snap Card</span>
+              <div className="flex flex-col items-start">
+                <span>AI Snap Card</span>
+                <div className="flex items-center space-x-1 text-xs">
+                  <Coins className="w-3 h-3" />
+                  <span>2 coins</span>
+                  {!canUseAISnap && <Lock className="w-3 h-3 ml-1" />}
+                </div>
+              </div>
             </div>
           </Button>
           
           <p className="text-slate-600 mt-3 text-center">
-            Point camera at business card for instant capture
+            {canUseAISnap 
+              ? "Point camera at business card for instant capture"
+              : "Upgrade to WowPro or buy coins to use AI Snap"
+            }
           </p>
+          
+          {!canUseAISnap && (
+            <div className="mt-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+              <p className="text-sm text-orange-800 text-center">
+                🔒 AI Snap requires 2 WowCoins per scan
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
