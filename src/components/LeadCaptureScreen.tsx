@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { MessageSquare, Mic, Plus, HelpCircle, Crown } from 'lucide-react';
+import { MessageSquare, Mic, Plus, HelpCircle, Crown, Coins } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import AISnapCapture from './AISnapCapture';
 import LeadEditModal from './LeadEditModal';
@@ -18,9 +18,14 @@ const LeadCaptureScreen = ({ isEventModeActive }: LeadCaptureScreenProps) => {
   const [capturedLead, setCapturedLead] = useState<any>(null);
   const [isOfflineMode, setIsOfflineMode] = useState(true);
   const [showWalkthrough, setShowWalkthrough] = useState(false);
-  const [coinBalance, setCoinBalance] = useState(0); // Free trial users start with 0 coins
+  const [coinBalance, setCoinBalance] = useState(150);
   const [isProUser, setIsProUser] = useState(false);
   const [trialDaysLeft, setTrialDaysLeft] = useState(12);
+  const [freeSnapsUsed, setFreeSnapsUsed] = useState(0);
+  const [teamMembersCount, setTeamMembersCount] = useState(1);
+
+  const freeSnapsLeft = Math.max(0, 3 - freeSnapsUsed);
+  const maxFreeTeamMembers = 1;
 
   useEffect(() => {
     // Check if user should see walkthrough
@@ -36,6 +41,13 @@ const LeadCaptureScreen = ({ isEventModeActive }: LeadCaptureScreenProps) => {
   const handleLeadCapture = (extractedData: any) => {
     setCapturedLead(extractedData);
     setShowEditModal(true);
+    
+    // Update usage counters
+    if (!isProUser && freeSnapsLeft > 0) {
+      setFreeSnapsUsed(prev => prev + 1);
+    } else if (!isProUser) {
+      setCoinBalance(prev => Math.max(0, prev - 1));
+    }
   };
 
   const handleSaveLead = (leadData: any) => {
@@ -67,7 +79,7 @@ const LeadCaptureScreen = ({ isEventModeActive }: LeadCaptureScreenProps) => {
   const handleUpgrade = () => {
     toast({
       title: "Upgrade to WowPro",
-      description: "Unlock Smart Reports & Team Delegation features.",
+      description: "Unlock unlimited AI Snaps, team members & advanced features.",
     });
   };
 
@@ -96,7 +108,7 @@ const LeadCaptureScreen = ({ isEventModeActive }: LeadCaptureScreenProps) => {
         </div>
       </div>
 
-      {/* Free Trial Upgrade Banner */}
+      {/* Usage & Trial Banner */}
       {!isProUser && (
         <Card className="mb-6 bg-gradient-to-r from-orange-50 to-yellow-50 border-orange-200">
           <CardContent className="p-4">
@@ -109,12 +121,34 @@ const LeadCaptureScreen = ({ isEventModeActive }: LeadCaptureScreenProps) => {
                     {trialDaysLeft} days left
                   </Badge>
                 </div>
-                <p className="text-sm text-orange-700">Get unlimited coins & features</p>
+                <div className="flex items-center space-x-4 text-sm text-orange-700">
+                  <div className="flex items-center space-x-1">
+                    <span>⚡ AI Snaps: {freeSnapsLeft}/3 free</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <Coins className="w-3 h-3" />
+                    <span>{coinBalance} coins</span>
+                  </div>
+                </div>
               </div>
               <Button onClick={handleUpgrade} size="sm" className="bg-orange-600 hover:bg-orange-700">
-                Upgrade to WowPro
+                Upgrade to Pro
               </Button>
             </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Upgrade Nudge based on usage */}
+      {!isProUser && freeSnapsLeft === 0 && coinBalance < 5 && (
+        <Card className="mb-4 bg-gradient-to-r from-red-50 to-pink-50 border-red-200">
+          <CardContent className="p-3 text-center">
+            <p className="text-sm text-red-800 mb-2">
+              🚨 Low on AI Snaps & Coins - Upgrade to continue capturing!
+            </p>
+            <Button onClick={handleUpgrade} size="sm" variant="outline" className="border-red-300 text-red-700">
+              Get Unlimited Access
+            </Button>
           </CardContent>
         </Card>
       )}
@@ -126,6 +160,11 @@ const LeadCaptureScreen = ({ isEventModeActive }: LeadCaptureScreenProps) => {
             <div>
               <p className="text-slate-300">Today's Captures</p>
               <p className="text-3xl font-bold">{todayCount}</p>
+              {!isProUser && (
+                <p className="text-xs text-slate-400 mt-1">
+                  💡 You've saved 4 hours with AI features
+                </p>
+              )}
             </div>
             <div className="text-right">
               <p className="text-slate-300">Target: 200</p>
@@ -149,6 +188,7 @@ const LeadCaptureScreen = ({ isEventModeActive }: LeadCaptureScreenProps) => {
           onCapture={handleLeadCapture} 
           coinBalance={coinBalance}
           isProUser={isProUser}
+          freeSnapsLeft={freeSnapsLeft}
         />
       </div>
 
@@ -161,7 +201,7 @@ const LeadCaptureScreen = ({ isEventModeActive }: LeadCaptureScreenProps) => {
         >
           <Plus className="w-6 h-6 text-slate-600" />
           <span className="font-semibold text-slate-700">Manual Entry</span>
-          <span className="text-xs text-slate-500">Quick add</span>
+          <span className="text-xs text-slate-500">Free</span>
         </Button>
         <Button 
           variant="outline" 
@@ -169,7 +209,7 @@ const LeadCaptureScreen = ({ isEventModeActive }: LeadCaptureScreenProps) => {
         >
           <Mic className="w-6 h-6 text-slate-600" />
           <span className="font-semibold text-slate-700">Voice Note</span>
-          <span className="text-xs text-slate-500">Record audio</span>
+          <span className="text-xs text-slate-500">Pro feature</span>
         </Button>
       </div>
 
@@ -184,14 +224,15 @@ const LeadCaptureScreen = ({ isEventModeActive }: LeadCaptureScreenProps) => {
         <CardContent>
           <div className="space-y-3">
             {[
-              { name: "Dr. Priya Patel", company: "HealthFirst", time: "2 min ago", tags: ["Hot Contact"] },
-              { name: "Rakesh Kumar", company: "MedCore", time: "15 min ago", tags: ["Distributor"] },
-              { name: "Sarah Johnson", company: "BioTech", time: "1 hour ago", tags: ["Decision Maker"] }
+              { name: "Dr. Priya Patel", company: "HealthFirst", time: "2 min ago", tags: ["Hot Lead"], assignedTo: "You" },
+              { name: "Rakesh Kumar", company: "MedCore", time: "15 min ago", tags: ["Distributor"], assignedTo: "Sarah" },
+              { name: "Johnson Bros", company: "BioTech", time: "1 hour ago", tags: ["Follow-up"], assignedTo: "You" }
             ].map((lead, index) => (
               <div key={index} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                 <div>
                   <p className="font-medium text-slate-800">{lead.name}</p>
                   <p className="text-sm text-slate-600">{lead.company}</p>
+                  <p className="text-xs text-slate-500">Assigned to {lead.assignedTo}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-xs text-slate-500">{lead.time}</p>

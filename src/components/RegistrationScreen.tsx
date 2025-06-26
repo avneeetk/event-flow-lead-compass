@@ -21,7 +21,12 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
     // Step 2: Business Contact Info (Optional)
     businessContactNumber: '',
     whatsappNumber: '',
-    businessEmail: ''
+    businessEmail: '',
+    website: '',
+    meetingLink: '',
+    linkedIn: '',
+    instagram: '',
+    twitter: ''
   });
 
   const [currentStep, setCurrentStep] = useState(0);
@@ -37,7 +42,7 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
     },
     {
       title: "Tell Us About Your Business",
-      subtitle: "Optional - you can update these later in Settings",
+      subtitle: "You can complete these later in Profile Settings",
       icon: <Building className="w-6 h-6" />,
     }
   ];
@@ -70,7 +75,7 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
     const errors: string[] = [];
     
     if (!formData.email.trim()) {
-      errors.push("Email address is required");
+      errors.push("Business email is required");
     } else if (!formData.email.includes('@') || !formData.email.includes('.')) {
       errors.push("Please enter a valid email address");
     }
@@ -117,19 +122,33 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
       businessEmail: formData.businessEmail || formData.email,
       businessContactNumber: formData.businessContactNumber,
       whatsappNumber: formData.whatsappNumber,
+      website: formData.website,
+      meetingLink: formData.meetingLink,
+      linkedIn: formData.linkedIn,
+      instagram: formData.instagram,
+      twitter: formData.twitter,
       profileCompleteness: calculateProfileCompleteness()
     };
 
+    toast({
+      title: "🎉 Profile Created Successfully!",
+      description: "Welcome to WOW Circle. Your 14-day free trial has started.",
+    });
+    
     onComplete(userData);
   };
 
   const calculateProfileCompleteness = () => {
     let completed = 2; // email and password always completed
-    let total = 5;
+    let total = 9;
     
     if (formData.businessContactNumber) completed++;
     if (formData.whatsappNumber) completed++;
     if (formData.businessEmail && formData.businessEmail !== formData.email) completed++;
+    if (formData.website) completed++;
+    if (formData.meetingLink) completed++;
+    if (formData.linkedIn) completed++;
+    if (formData.instagram || formData.twitter) completed++;
     
     return Math.round((completed / total) * 100);
   };
@@ -169,7 +188,7 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
             {currentStep === 0 && (
               <>
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-white/90">Email Address *</Label>
+                  <Label htmlFor="email" className="text-white/90">Business Email *</Label>
                   <Input
                     id="email"
                     type="email"
@@ -178,7 +197,7 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
                     onChange={(e) => handleInputChange('email', e.target.value)}
                     className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
                   />
-                  <p className="text-white/60 text-xs">This will be your login email for WOW Circle</p>
+                  <p className="text-white/60 text-xs">Used for login credentials</p>
                 </div>
 
                 <div className="space-y-2">
@@ -271,43 +290,92 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
               <>
                 <div className="mb-4 p-3 bg-blue-500/20 rounded-lg border border-blue-400/30">
                   <p className="text-blue-200 text-sm">
-                    ℹ️ All fields are optional. You can update these later in Settings.
+                    ℹ️ All fields are optional. You can complete these later in Profile Settings.
                   </p>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="businessContactNumber" className="text-white/90">Business Contact Number</Label>
-                  <Input
-                    id="businessContactNumber"
-                    placeholder="+91 98765 43210"
-                    value={formData.businessContactNumber}
-                    onChange={(e) => handleInputChange('businessContactNumber', e.target.value)}
-                    className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
-                  />
-                </div>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="businessContactNumber" className="text-white/90">Business Contact Number</Label>
+                    <Input
+                      id="businessContactNumber"
+                      placeholder="+91 98765 43210"
+                      value={formData.businessContactNumber}
+                      onChange={(e) => handleInputChange('businessContactNumber', e.target.value)}
+                      className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
+                    />
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="whatsappNumber" className="text-white/90">WhatsApp Business Number</Label>
-                  <Input
-                    id="whatsappNumber"
-                    placeholder="+91 98765 43210"
-                    value={formData.whatsappNumber}
-                    onChange={(e) => handleInputChange('whatsappNumber', e.target.value)}
-                    className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
-                  />
-                </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="whatsappNumber" className="text-white/90">WhatsApp Business Number</Label>
+                    <Input
+                      id="whatsappNumber"
+                      placeholder="+91 98765 43210"
+                      value={formData.whatsappNumber}
+                      onChange={(e) => handleInputChange('whatsappNumber', e.target.value)}
+                      className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
+                    />
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="businessEmail" className="text-white/90">Business Email (if different)</Label>
-                  <Input
-                    id="businessEmail"
-                    type="email"
-                    placeholder="sales@pharmatech.com"
-                    value={formData.businessEmail}
-                    onChange={(e) => handleInputChange('businessEmail', e.target.value)}
-                    className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
-                  />
-                  <p className="text-white/50 text-xs">For business cards and client communication</p>
+                  <div className="space-y-2">
+                    <Label htmlFor="businessEmail" className="text-white/90">Alternate Contact Email</Label>
+                    <Input
+                      id="businessEmail"
+                      type="email"
+                      placeholder="sales@pharmatech.com"
+                      value={formData.businessEmail}
+                      onChange={(e) => handleInputChange('businessEmail', e.target.value)}
+                      className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
+                    />
+                    <p className="text-white/50 text-xs">Use this email for lead follow-ups</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="website" className="text-white/90">Website / Brochure URL</Label>
+                    <Input
+                      id="website"
+                      placeholder="www.pharmatech.com"
+                      value={formData.website}
+                      onChange={(e) => handleInputChange('website', e.target.value)}
+                      className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="meetingLink" className="text-white/90">Calendly / Meeting Link</Label>
+                    <Input
+                      id="meetingLink"
+                      placeholder="calendly.com/sarah-pharmatech"
+                      value={formData.meetingLink}
+                      onChange={(e) => handleInputChange('meetingLink', e.target.value)}
+                      className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
+                    />
+                    <p className="text-white/50 text-xs">Google Meet, Zoom, or Calendly link</p>
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label className="text-white/90">Social Handles (Optional)</Label>
+                    <div className="space-y-2">
+                      <Input
+                        placeholder="LinkedIn profile URL"
+                        value={formData.linkedIn}
+                        onChange={(e) => handleInputChange('linkedIn', e.target.value)}
+                        className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
+                      />
+                      <Input
+                        placeholder="Instagram handle"
+                        value={formData.instagram}
+                        onChange={(e) => handleInputChange('instagram', e.target.value)}
+                        className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
+                      />
+                      <Input
+                        placeholder="X (Twitter) handle"
+                        value={formData.twitter}
+                        onChange={(e) => handleInputChange('twitter', e.target.value)}
+                        className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
+                      />
+                    </div>
+                  </div>
                 </div>
               </>
             )}
