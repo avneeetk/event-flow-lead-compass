@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { User, Building, Eye, EyeOff, AlertCircle, Check, X } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { User, Building, MessageSquare, Eye, EyeOff, AlertCircle, Check, X, Upload } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 interface RegistrationScreenProps {
@@ -14,19 +15,23 @@ interface RegistrationScreenProps {
 
 const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenProps) => {
   const [formData, setFormData] = useState({
-    // Step 1: Login Credentials
+    // Step 1: Account Setup
     email: '',
     password: '',
     confirmPassword: '',
-    // Step 2: Business Contact Info (Optional)
-    businessContactNumber: '',
-    whatsappNumber: '',
-    businessEmail: '',
+    // Step 2: Company Details
+    companyName: '',
+    companyLogo: '',
     website: '',
-    meetingLink: '',
+    businessCategory: '',
+    industry: '',
+    // Step 3: Communication Details
+    whatsappNumber: '',
+    businessContactNumber: '',
     linkedIn: '',
     instagram: '',
-    twitter: ''
+    twitter: '',
+    meetingLink: ''
   });
 
   const [currentStep, setCurrentStep] = useState(0);
@@ -36,15 +41,33 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
 
   const steps = [
     {
-      title: "Create Your WOW Circle Account",
-      subtitle: "Get started with your credentials",
+      title: "Account Setup",
+      subtitle: "Create your login credentials",
       icon: <User className="w-6 h-6" />,
     },
     {
-      title: "Tell Us About Your Business",
-      subtitle: "You can complete these later in Profile Settings",
+      title: "Company Details",
+      subtitle: "Tell us about your business",
       icon: <Building className="w-6 h-6" />,
+    },
+    {
+      title: "Communication Details",
+      subtitle: "How can clients reach you? (Optional)",
+      icon: <MessageSquare className="w-6 h-6" />,
     }
+  ];
+
+  const businessCategories = [
+    "Healthcare & Pharmaceuticals",
+    "Technology & Software",
+    "Manufacturing",
+    "Retail & E-commerce",
+    "Financial Services",
+    "Real Estate",
+    "Education",
+    "Consulting & Services",
+    "Food & Beverage",
+    "Other"
   ];
 
   const handleInputChange = (field: string, value: string) => {
@@ -96,6 +119,17 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
     return errors.length === 0;
   };
 
+  const validateStep2 = () => {
+    const errors: string[] = [];
+    
+    if (!formData.companyName.trim()) {
+      errors.push("Company name is required");
+    }
+    
+    setValidationErrors(errors);
+    return errors.length === 0;
+  };
+
   const isStep1Valid = () => {
     const hasEmail = formData.email.trim().length > 0;
     const hasValidEmail = formData.email.includes('@') && formData.email.includes('.');
@@ -106,10 +140,18 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
     return hasEmail && hasValidEmail && hasPassword && hasConfirmPassword && passwordsMatch;
   };
 
+  const isStep2Valid = () => {
+    return formData.companyName.trim().length > 0;
+  };
+
   const nextStep = () => {
     if (currentStep === 0) {
       if (validateStep1()) {
         setCurrentStep(1);
+      }
+    } else if (currentStep === 1) {
+      if (validateStep2()) {
+        setCurrentStep(2);
       }
     } else {
       completeRegistration();
@@ -119,14 +161,17 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
   const completeRegistration = () => {
     const userData = {
       email: formData.email,
-      businessEmail: formData.businessEmail || formData.email,
+      companyName: formData.companyName,
+      companyLogo: formData.companyLogo,
+      website: formData.website,
+      businessCategory: formData.businessCategory,
+      industry: formData.industry,
       businessContactNumber: formData.businessContactNumber,
       whatsappNumber: formData.whatsappNumber,
-      website: formData.website,
-      meetingLink: formData.meetingLink,
       linkedIn: formData.linkedIn,
       instagram: formData.instagram,
       twitter: formData.twitter,
+      meetingLink: formData.meetingLink,
       profileCompleteness: calculateProfileCompleteness()
     };
 
@@ -139,16 +184,18 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
   };
 
   const calculateProfileCompleteness = () => {
-    let completed = 2; // email and password always completed
-    let total = 9;
+    let completed = 3; // email, password, company name always completed
+    let total = 11;
     
+    if (formData.companyLogo) completed++;
+    if (formData.website) completed++;
+    if (formData.businessCategory) completed++;
+    if (formData.industry) completed++;
     if (formData.businessContactNumber) completed++;
     if (formData.whatsappNumber) completed++;
-    if (formData.businessEmail && formData.businessEmail !== formData.email) completed++;
-    if (formData.website) completed++;
-    if (formData.meetingLink) completed++;
     if (formData.linkedIn) completed++;
     if (formData.instagram || formData.twitter) completed++;
+    if (formData.meetingLink) completed++;
     
     return Math.round((completed / total) * 100);
   };
@@ -184,7 +231,7 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
           </CardHeader>
           
           <CardContent className="space-y-4">
-            {/* Step 1: Login Credentials */}
+            {/* Step 1: Account Setup */}
             {currentStep === 0 && (
               <>
                 <div className="space-y-2">
@@ -197,7 +244,7 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
                     onChange={(e) => handleInputChange('email', e.target.value)}
                     className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
                   />
-                  <p className="text-white/60 text-xs">Used for login credentials</p>
+                  <p className="text-white/60 text-xs">This email will be your login credential</p>
                 </div>
 
                 <div className="space-y-2">
@@ -285,8 +332,77 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
               </>
             )}
 
-            {/* Step 2: Business Contact Info */}
+            {/* Step 2: Company Details */}
             {currentStep === 1 && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="companyName" className="text-white/90">Company Name *</Label>
+                  <Input
+                    id="companyName"
+                    placeholder="Pharmatech Solutions"
+                    value={formData.companyName}
+                    onChange={(e) => handleInputChange('companyName', e.target.value)}
+                    className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="companyLogo" className="text-white/90">Company Logo (Optional)</Label>
+                  <div className="flex items-center space-x-3">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="bg-white/10 border-white/30 text-white hover:bg-white/20"
+                    >
+                      <Upload className="w-4 h-4 mr-2" />
+                      Upload Logo
+                    </Button>
+                    <span className="text-white/60 text-xs">JPG, PNG up to 2MB</span>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="website" className="text-white/90">Website (Optional)</Label>
+                  <Input
+                    id="website"
+                    placeholder="www.pharmatech.com"
+                    value={formData.website}
+                    onChange={(e) => handleInputChange('website', e.target.value)}
+                    className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="businessCategory" className="text-white/90">Business Category (Optional)</Label>
+                  <Select value={formData.businessCategory} onValueChange={(value) => handleInputChange('businessCategory', value)}>
+                    <SelectTrigger className="bg-white/10 border-white/30 text-white focus:bg-white/20">
+                      <SelectValue placeholder="Select your business category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {businessCategories.map((category) => (
+                        <SelectItem key={category} value={category}>
+                          {category}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="industry" className="text-white/90">Industry (Optional)</Label>
+                  <Input
+                    id="industry"
+                    placeholder="e.g., Pharmaceutical Manufacturing"
+                    value={formData.industry}
+                    onChange={(e) => handleInputChange('industry', e.target.value)}
+                    className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
+                  />
+                </div>
+              </>
+            )}
+
+            {/* Step 3: Communication Details */}
+            {currentStep === 2 && (
               <>
                 <div className="mb-4 p-3 bg-blue-500/20 rounded-lg border border-blue-400/30">
                   <p className="text-blue-200 text-sm">
@@ -295,17 +411,6 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
                 </div>
 
                 <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="businessContactNumber" className="text-white/90">Business Contact Number</Label>
-                    <Input
-                      id="businessContactNumber"
-                      placeholder="+91 98765 43210"
-                      value={formData.businessContactNumber}
-                      onChange={(e) => handleInputChange('businessContactNumber', e.target.value)}
-                      className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
-                    />
-                  </div>
-
                   <div className="space-y-2">
                     <Label htmlFor="whatsappNumber" className="text-white/90">WhatsApp Business Number</Label>
                     <Input
@@ -318,25 +423,12 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="businessEmail" className="text-white/90">Alternate Contact Email</Label>
+                    <Label htmlFor="businessContactNumber" className="text-white/90">Business Contact Number</Label>
                     <Input
-                      id="businessEmail"
-                      type="email"
-                      placeholder="sales@pharmatech.com"
-                      value={formData.businessEmail}
-                      onChange={(e) => handleInputChange('businessEmail', e.target.value)}
-                      className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
-                    />
-                    <p className="text-white/50 text-xs">Use this email for lead follow-ups</p>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="website" className="text-white/90">Website / Brochure URL</Label>
-                    <Input
-                      id="website"
-                      placeholder="www.pharmatech.com"
-                      value={formData.website}
-                      onChange={(e) => handleInputChange('website', e.target.value)}
+                      id="businessContactNumber"
+                      placeholder="+91 98765 43210"
+                      value={formData.businessContactNumber}
+                      onChange={(e) => handleInputChange('businessContactNumber', e.target.value)}
                       className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
                     />
                   </div>
@@ -398,10 +490,13 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
             <div className="pt-4 space-y-3">
               <Button
                 onClick={nextStep}
-                disabled={currentStep === 0 && !isStep1Valid()}
+                disabled={
+                  (currentStep === 0 && !isStep1Valid()) ||
+                  (currentStep === 1 && !isStep2Valid())
+                }
                 className="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-900 hover:from-cyan-300 hover:to-blue-400 font-semibold py-6 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {currentStep === 0 ? "Next" : "Continue to Dashboard"}
+                {currentStep === 2 ? "Complete Registration" : "Next"}
               </Button>
               
               {currentStep > 0 && (
