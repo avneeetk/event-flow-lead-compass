@@ -4,9 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { User, Building, Globe, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { User, Building, Eye, EyeOff, AlertCircle, Check, X } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 interface RegistrationScreenProps {
@@ -16,101 +14,86 @@ interface RegistrationScreenProps {
 
 const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenProps) => {
   const [formData, setFormData] = useState({
-    // Section 1: Account Setup
-    name: '',
-    businessEmail: '',
+    // Step 1: Login Credentials
+    email: '',
     password: '',
     confirmPassword: '',
-    // Section 2: Business Information
-    company: '',
-    industry: '',
-    city: '',
-    role: '',
-    website: '',
-    alternateEmail: '',
-    // Section 3: Communication & Social
-    whatsappEnabled: false,
+    // Step 2: Business Contact Info (Optional)
+    businessContactNumber: '',
     whatsappNumber: '',
-    linkedin: '',
-    instagram: '',
-    facebook: '',
-    meetingLink: '',
-    brochureLink: ''
+    businessEmail: ''
   });
 
-  const [currentSection, setCurrentSection] = useState(0);
+  const [currentStep, setCurrentStep] = useState(0);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
-  const sections = [
+  const steps = [
     {
-      title: "Create Account",
-      subtitle: "Login using your business email",
+      title: "Create Your WOW Circle Account",
+      subtitle: "Get started with your credentials",
       icon: <User className="w-6 h-6" />,
-      fields: ['name', 'businessEmail', 'password', 'confirmPassword']
     },
     {
-      title: "Business Information", 
-      subtitle: "Tell us about your company",
+      title: "Tell Us About Your Business",
+      subtitle: "Optional - you can update these later in Settings",
       icon: <Building className="w-6 h-6" />,
-      fields: ['company', 'industry', 'city', 'role', 'website', 'alternateEmail']
-    },
-    {
-      title: "Connect & Share",
-      subtitle: "Optional, but helps improve discovery & reach",
-      icon: <Globe className="w-6 h-6" />,
-      fields: []
     }
   ];
 
-  const handleInputChange = (field: string, value: string | boolean) => {
+  const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (validationErrors.length > 0) {
       setValidationErrors([]);
     }
   };
 
-  const validateCurrentSection = () => {
+  const getPasswordStrength = (password: string) => {
+    let score = 0;
+    const criteria = {
+      length: password.length >= 8,
+      uppercase: /[A-Z]/.test(password),
+      lowercase: /[a-z]/.test(password),
+      number: /\d/.test(password),
+      special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+    };
+
+    Object.values(criteria).forEach(met => met && score++);
+    
+    return { score, criteria };
+  };
+
+  const passwordStrength = getPasswordStrength(formData.password);
+
+  const validateStep1 = () => {
     const errors: string[] = [];
     
-    if (currentSection === 0) {
-      if (!formData.name.trim()) errors.push("Full Name is required");
-      if (!formData.businessEmail.trim()) errors.push("Business Email is required");
-      if (!formData.password) errors.push("Password is required");
-      if (!formData.confirmPassword) errors.push("Confirm Password is required");
-      if (formData.password && formData.password.length < 6) errors.push("Password must be at least 6 characters");
-      if (formData.password && formData.confirmPassword && formData.password !== formData.confirmPassword) {
-        errors.push("Passwords don't match");
-      }
-    } else if (currentSection === 1) {
-      if (!formData.company.trim()) errors.push("Company Name is required");
-      if (!formData.industry) errors.push("Industry is required");
-      if (!formData.city.trim()) errors.push("City is required");
-      if (!formData.role.trim()) errors.push("Your Role is required");
+    if (!formData.email.trim()) errors.push("Email address is required");
+    if (!formData.email.includes('@')) errors.push("Please enter a valid email address");
+    if (!formData.password) errors.push("Password is required");
+    if (!formData.confirmPassword) errors.push("Please confirm your password");
+    if (formData.password && formData.password.length < 6) errors.push("Password must be at least 6 characters");
+    if (formData.password && formData.confirmPassword && formData.password !== formData.confirmPassword) {
+      errors.push("Passwords don't match");
     }
     
     setValidationErrors(errors);
     return errors.length === 0;
   };
 
-  const isCurrentSectionValid = () => {
-    if (currentSection === 0) {
-      const requiredValid = formData.name && formData.businessEmail && formData.password && formData.confirmPassword;
-      const passwordMatch = formData.password === formData.confirmPassword;
-      const passwordLength = formData.password.length >= 6;
-      return requiredValid && passwordMatch && passwordLength;
-    } else if (currentSection === 1) {
-      return formData.company && formData.industry && formData.city && formData.role;
-    } else {
-      return true;
-    }
+  const isStep1Valid = () => {
+    const requiredValid = formData.email && formData.password && formData.confirmPassword;
+    const passwordMatch = formData.password === formData.confirmPassword;
+    const passwordLength = formData.password.length >= 6;
+    const validEmail = formData.email.includes('@');
+    return requiredValid && passwordMatch && passwordLength && validEmail;
   };
 
-  const nextSection = () => {
-    if (currentSection < sections.length - 1) {
-      if (validateCurrentSection()) {
-        setCurrentSection(currentSection + 1);
+  const nextStep = () => {
+    if (currentStep === 0) {
+      if (validateStep1()) {
+        setCurrentStep(1);
       }
     } else {
       completeRegistration();
@@ -118,25 +101,44 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
   };
 
   const completeRegistration = () => {
+    const userData = {
+      email: formData.email,
+      businessEmail: formData.businessEmail || formData.email,
+      businessContactNumber: formData.businessContactNumber,
+      whatsappNumber: formData.whatsappNumber,
+      profileCompleteness: calculateProfileCompleteness()
+    };
+
     toast({
-      title: "Profile created successfully! 🎉",
-      description: "Welcome to WOW Circle. Starting your 14-day free trial.",
+      title: "🎉 Your profile is ready – Start capturing leads now!",
+      description: "Welcome to WOW Circle. Your 14-day free trial has started.",
     });
-    onComplete(formData);
+    onComplete(userData);
   };
 
-  const currentSectionData = sections[currentSection];
+  const calculateProfileCompleteness = () => {
+    let completed = 2; // email and password always completed
+    let total = 5;
+    
+    if (formData.businessContactNumber) completed++;
+    if (formData.whatsappNumber) completed++;
+    if (formData.businessEmail && formData.businessEmail !== formData.email) completed++;
+    
+    return Math.round((completed / total) * 100);
+  };
+
+  const currentStepData = steps[currentStep];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 flex flex-col items-center justify-center p-6">
       <div className="w-full max-w-sm">
         {/* Progress indicators */}
         <div className="flex justify-center mb-8 space-x-2">
-          {sections.map((_, index) => (
+          {steps.map((_, index) => (
             <div
               key={index}
               className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                index <= currentSection ? 'bg-cyan-400' : 'bg-white/30'
+                index <= currentStep ? 'bg-cyan-400' : 'bg-white/30'
               }`}
             />
           ))}
@@ -146,43 +148,34 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
           <CardHeader>
             <div className="flex items-center space-x-3 mb-4">
               <div className="p-2 bg-cyan-400/20 rounded-lg">
-                {currentSectionData.icon}
+                {currentStepData.icon}
               </div>
               <div>
-                <CardTitle className="text-xl">{currentSectionData.title}</CardTitle>
-                <p className="text-white/80 text-sm">{currentSectionData.subtitle}</p>
+                <CardTitle className="text-xl">{currentStepData.title}</CardTitle>
+                <p className="text-white/80 text-sm">{currentStepData.subtitle}</p>
               </div>
             </div>
           </CardHeader>
           
           <CardContent className="space-y-4">
-            {/* Section 1: Account Setup */}
-            {currentSection === 0 && (
+            {/* Step 1: Login Credentials */}
+            {currentStep === 0 && (
               <>
                 <div className="space-y-2">
-                  <Label htmlFor="name" className="text-white/90">Full Name *</Label>
+                  <Label htmlFor="email" className="text-white/90">Email Address *</Label>
                   <Input
-                    id="name"
-                    placeholder="Sarah Verma"
-                    value={formData.name}
-                    onChange={(e) => handleInputChange('name', e.target.value)}
-                    className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="businessEmail" className="text-white/90">Business Email * (Login Credential)</Label>
-                  <Input
-                    id="businessEmail"
+                    id="email"
                     type="email"
                     placeholder="sarah@pharmatech.com"
-                    value={formData.businessEmail}
-                    onChange={(e) => handleInputChange('businessEmail', e.target.value)}
+                    value={formData.email}
+                    onChange={(e) => handleInputChange('email', e.target.value)}
                     className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
                   />
                   <p className="text-white/60 text-xs">This will be your login email for WOW Circle</p>
                 </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="text-white/90">Password * (min 6 characters)</Label>
+                  <Label htmlFor="password" className="text-white/90">Password *</Label>
                   <div className="relative">
                     <Input
                       id="password"
@@ -202,7 +195,45 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </Button>
                   </div>
+                  
+                  {/* Password Strength Indicator */}
+                  {formData.password && (
+                    <div className="space-y-2">
+                      <div className="flex items-center space-x-2">
+                        <div className="flex-1 bg-white/20 rounded-full h-2">
+                          <div 
+                            className={`h-2 rounded-full transition-all duration-300 ${
+                              passwordStrength.score < 2 ? 'bg-red-400' :
+                              passwordStrength.score < 4 ? 'bg-yellow-400' : 'bg-green-400'
+                            }`}
+                            style={{ width: `${(passwordStrength.score / 5) * 100}%` }}
+                          />
+                        </div>
+                        <span className="text-xs text-white/70">
+                          {passwordStrength.score < 2 ? 'Weak' :
+                           passwordStrength.score < 4 ? 'Medium' : 'Strong'}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-1 text-xs">
+                        {Object.entries({
+                          '8+ characters': passwordStrength.criteria.length,
+                          'Uppercase': passwordStrength.criteria.uppercase,
+                          'Lowercase': passwordStrength.criteria.lowercase,
+                          'Number': passwordStrength.criteria.number
+                        }).map(([label, met]) => (
+                          <div key={label} className="flex items-center space-x-1">
+                            {met ? 
+                              <Check className="w-3 h-3 text-green-400" /> : 
+                              <X className="w-3 h-3 text-white/40" />
+                            }
+                            <span className={met ? 'text-green-400' : 'text-white/40'}>{label}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="confirmPassword" className="text-white/90">Confirm Password *</Label>
                   <div className="relative">
@@ -228,157 +259,48 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
               </>
             )}
 
-            {/* Section 2: Business Information */}
-            {currentSection === 1 && (
+            {/* Step 2: Business Contact Info */}
+            {currentStep === 1 && (
               <>
+                <div className="mb-4 p-3 bg-blue-500/20 rounded-lg border border-blue-400/30">
+                  <p className="text-blue-200 text-sm">
+                    ℹ️ All fields are optional. You can update these later in Settings.
+                  </p>
+                </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="company" className="text-white/90">Company Name *</Label>
+                  <Label htmlFor="businessContactNumber" className="text-white/90">Business Contact Number</Label>
                   <Input
-                    id="company"
-                    placeholder="PharmaTech Solutions"
-                    value={formData.company}
-                    onChange={(e) => handleInputChange('company', e.target.value)}
+                    id="businessContactNumber"
+                    placeholder="+91 98765 43210"
+                    value={formData.businessContactNumber}
+                    onChange={(e) => handleInputChange('businessContactNumber', e.target.value)}
                     className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
                   />
                 </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="industry" className="text-white/90">Industry *</Label>
-                  <Select onValueChange={(value) => handleInputChange('industry', value)}>
-                    <SelectTrigger className="bg-white/10 border-white/30 text-white focus:bg-white/20">
-                      <SelectValue placeholder="Select industry" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pharmaceuticals">Pharmaceuticals</SelectItem>
-                      <SelectItem value="healthcare">Healthcare</SelectItem>
-                      <SelectItem value="b2b-saas">B2B SaaS</SelectItem>
-                      <SelectItem value="education">Education</SelectItem>
-                      <SelectItem value="manufacturing">Manufacturing</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="city" className="text-white/90">City *</Label>
+                  <Label htmlFor="whatsappNumber" className="text-white/90">WhatsApp Business Number</Label>
                   <Input
-                    id="city"
-                    placeholder="Mumbai, Bengaluru, Delhi"
-                    value={formData.city}
-                    onChange={(e) => handleInputChange('city', e.target.value)}
+                    id="whatsappNumber"
+                    placeholder="+91 98765 43210"
+                    value={formData.whatsappNumber}
+                    onChange={(e) => handleInputChange('whatsappNumber', e.target.value)}
                     className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
                   />
                 </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="role" className="text-white/90">Your Role *</Label>
+                  <Label htmlFor="businessEmail" className="text-white/90">Business Email (if different)</Label>
                   <Input
-                    id="role"
-                    placeholder="Sales Lead, Business Development"
-                    value={formData.role}
-                    onChange={(e) => handleInputChange('role', e.target.value)}
-                    className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="website" className="text-white/90">Company Website</Label>
-                  <Input
-                    id="website"
-                    placeholder="https://pharmatech.com"
-                    value={formData.website}
-                    onChange={(e) => handleInputChange('website', e.target.value)}
-                    className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
-                  />
-                  <p className="text-white/50 text-xs">Optional, but helps improve discovery & reach</p>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="alternateEmail" className="text-white/90">Alternate Email for Lead Communication</Label>
-                  <Input
-                    id="alternateEmail"
+                    id="businessEmail"
                     type="email"
-                    placeholder="sarah.leads@pharmatech.com"
-                    value={formData.alternateEmail}
-                    onChange={(e) => handleInputChange('alternateEmail', e.target.value)}
+                    placeholder="sales@pharmatech.com"
+                    value={formData.businessEmail}
+                    onChange={(e) => handleInputChange('businessEmail', e.target.value)}
                     className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
                   />
-                  <p className="text-white/50 text-xs">Used for automated follow-up emails (optional)</p>
-                </div>
-              </>
-            )}
-
-            {/* Section 3: Communication & Social */}
-            {currentSection === 2 && (
-              <>
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-3">
-                    <Switch
-                      checked={formData.whatsappEnabled}
-                      onCheckedChange={(checked) => handleInputChange('whatsappEnabled', checked)}
-                    />
-                    <Label className="text-white/90">WhatsApp Business</Label>
-                  </div>
-                  {formData.whatsappEnabled && (
-                    <Input
-                      placeholder="+91 98765 43210"
-                      value={formData.whatsappNumber}
-                      onChange={(e) => handleInputChange('whatsappNumber', e.target.value)}
-                      className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
-                    />
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="linkedin" className="text-white/90">LinkedIn Profile</Label>
-                  <Input
-                    id="linkedin"
-                    placeholder="https://linkedin.com/in/sarahverma"
-                    value={formData.linkedin}
-                    onChange={(e) => handleInputChange('linkedin', e.target.value)}
-                    className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="instagram" className="text-white/90">Instagram</Label>
-                  <Input
-                    id="instagram"
-                    placeholder="@yourcompany"
-                    value={formData.instagram}
-                    onChange={(e) => handleInputChange('instagram', e.target.value)}
-                    className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="facebook" className="text-white/90">Facebook</Label>
-                  <Input
-                    id="facebook"
-                    placeholder="@yourcompany"
-                    value={formData.facebook}
-                    onChange={(e) => handleInputChange('facebook', e.target.value)}
-                    className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="meetingLink" className="text-white/90">Meeting Link</Label>
-                  <Input
-                    id="meetingLink"
-                    placeholder="calendly.com/sarah-verma or meet.google.com/abc"
-                    value={formData.meetingLink}
-                    onChange={(e) => handleInputChange('meetingLink', e.target.value)}
-                    className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
-                  />
-                  <p className="text-white/50 text-xs">Google Meet, Zoom, or Calendly link</p>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="brochureLink" className="text-white/90">Business Brochure/PDF</Label>
-                  <Input
-                    id="brochureLink"
-                    placeholder="https://drive.google.com/brochure.pdf"
-                    value={formData.brochureLink}
-                    onChange={(e) => handleInputChange('brochureLink', e.target.value)}
-                    className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
-                  />
-                  <p className="text-white/50 text-xs">Link to company brochure or product catalog</p>
+                  <p className="text-white/50 text-xs">For business cards and client communication</p>
                 </div>
               </>
             )}
@@ -400,16 +322,16 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
 
             <div className="pt-4 space-y-3">
               <Button
-                onClick={nextSection}
-                disabled={!isCurrentSectionValid()}
+                onClick={nextStep}
+                disabled={currentStep === 0 && !isStep1Valid()}
                 className="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-900 hover:from-cyan-300 hover:to-blue-400 font-semibold py-6 text-lg"
               >
-                {currentSection === sections.length - 1 ? "Complete Registration" : "Continue"}
+                {currentStep === 0 ? "Next" : "Continue to Dashboard"}
               </Button>
               
-              {currentSection > 0 && (
+              {currentStep > 0 && (
                 <Button
-                  onClick={() => setCurrentSection(currentSection - 1)}
+                  onClick={() => setCurrentStep(currentStep - 1)}
                   variant="ghost"
                   className="w-full text-white/80 hover:text-white hover:bg-white/10"
                 >
@@ -417,7 +339,7 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
                 </Button>
               )}
 
-              {currentSection === 0 && (
+              {currentStep === 0 && (
                 <div className="pt-4 text-center">
                   <p className="text-white/60 text-sm">
                     Already have an account?{' '}

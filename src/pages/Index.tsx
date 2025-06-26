@@ -13,6 +13,7 @@ import SupportChat from '../components/SupportChat';
 import { Toaster } from '@/components/ui/toaster';
 import { toast } from '@/hooks/use-toast';
 import { Coins } from 'lucide-react';
+import OnboardingCards from '../components/OnboardingCards';
 
 const Index = () => {
   const [hasLoggedIn, setHasLoggedIn] = useState(false);
@@ -22,6 +23,7 @@ const Index = () => {
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [isGuestMode, setIsGuestMode] = useState(false);
   const [coinBalance, setCoinBalance] = useState(150);
+  const [userProfileData, setUserProfileData] = useState<any>(null);
 
   useEffect(() => {
     const loginComplete = localStorage.getItem('loginComplete');
@@ -43,6 +45,14 @@ const Index = () => {
     }
   }, []);
 
+  useEffect(() => {
+    // Load user profile data
+    const userData = localStorage.getItem('userData');
+    if (userData) {
+      setUserProfileData(JSON.parse(userData));
+    }
+  }, []);
+
   const completeLogin = (credentials: any) => {
     localStorage.setItem('loginComplete', 'true');
     setHasLoggedIn(true);
@@ -52,12 +62,13 @@ const Index = () => {
     localStorage.setItem('loginComplete', 'true');
     localStorage.setItem('userData', JSON.stringify(userData));
     setHasLoggedIn(true);
+    setUserProfileData(userData);
     
     // Welcome new users with coins
     setCoinBalance(200);
     toast({
-      title: "🎉 You've received 200 WowCoins with your registration!",
-      description: "Start capturing leads with AI Snap technology.",
+      title: "🎉 Your profile is ready – Start capturing leads now!",
+      description: "Welcome to WOW Circle. Your 14-day free trial has started.",
     });
   };
 
@@ -79,6 +90,22 @@ const Index = () => {
       title: "Guest Mode Activated",
       description: "14-day free trial started. Some features may be limited.",
     });
+  };
+
+  const handleCompleteProfile = () => {
+    setCurrentView('account');
+    toast({
+      title: "Complete Your Profile",
+      description: "Add more details to increase trust and conversions.",
+    });
+  };
+
+  const handleStartTrial = () => {
+    toast({
+      title: "Free Trial Started! 🎉",
+      description: "You now have access to all Pro features for 14 days.",
+    });
+    setCoinBalance(500); // Give trial users more coins
   };
 
   // Handle auth flow
@@ -108,7 +135,16 @@ const Index = () => {
   const renderCurrentView = () => {
     switch (currentView) {
       case 'capture':
-        return <LeadCaptureScreen isEventModeActive={isEventModeActive} />;
+        return (
+          <>
+            <OnboardingCards 
+              profileCompleteness={userProfileData?.profileCompleteness || 20}
+              onCompleteProfile={handleCompleteProfile}
+              onStartTrial={handleStartTrial}
+            />
+            <LeadCaptureScreen isEventModeActive={isEventModeActive} />
+          </>
+        );
       case 'contacts':
         return <ContactDashboard />;
       case 'followup':
@@ -120,7 +156,16 @@ const Index = () => {
       case 'account':
         return <AccountSettings />;
       default:
-        return <LeadCaptureScreen isEventModeActive={isEventModeActive} />;
+        return (
+          <>
+            <OnboardingCards 
+              profileCompleteness={userProfileData?.profileCompleteness || 20}
+              onCompleteProfile={handleCompleteProfile}
+              onStartTrial={handleStartTrial}
+            />
+            <LeadCaptureScreen isEventModeActive={isEventModeActive} />
+          </>
+        );
     }
   };
 
