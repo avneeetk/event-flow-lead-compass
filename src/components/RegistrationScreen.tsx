@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { User, Building, MessageSquare, Eye, EyeOff, AlertCircle, Check, X, Upload } from 'lucide-react';
+import { User, Building, MessageSquare, Eye, EyeOff, AlertCircle, Check, X, Upload, ChevronDown, ChevronUp } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 interface RegistrationScreenProps {
@@ -25,19 +25,21 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
     website: '',
     businessCategory: '',
     industry: '',
-    // Step 3: Communication Details
+    // Step 3: Communication & Branding
     whatsappNumber: '',
     businessContactNumber: '',
-    linkedIn: '',
-    instagram: '',
-    twitter: '',
-    meetingLink: ''
+    facebookPage: '',
+    instagramHandle: '',
+    linkedinHandle: '',
+    meetingLink: '',
+    companyBrochure: ''
   });
 
   const [currentStep, setCurrentStep] = useState(0);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [showMoreDetails, setShowMoreDetails] = useState(false);
 
   const steps = [
     {
@@ -51,8 +53,8 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
       icon: <Building className="w-6 h-6" />,
     },
     {
-      title: "Communication Details",
-      subtitle: "How can clients reach you? (Optional)",
+      title: "Communication & Branding",
+      subtitle: "How can clients reach you? (All Optional)",
       icon: <MessageSquare className="w-6 h-6" />,
     }
   ];
@@ -168,10 +170,11 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
       industry: formData.industry,
       businessContactNumber: formData.businessContactNumber,
       whatsappNumber: formData.whatsappNumber,
-      linkedIn: formData.linkedIn,
-      instagram: formData.instagram,
-      twitter: formData.twitter,
+      facebookPage: formData.facebookPage,
+      instagramHandle: formData.instagramHandle,
+      linkedinHandle: formData.linkedinHandle,
       meetingLink: formData.meetingLink,
+      companyBrochure: formData.companyBrochure,
       profileCompleteness: calculateProfileCompleteness()
     };
 
@@ -185,7 +188,7 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
 
   const calculateProfileCompleteness = () => {
     let completed = 3; // email, password, company name always completed
-    let total = 11;
+    let total = 13;
     
     if (formData.companyLogo) completed++;
     if (formData.website) completed++;
@@ -193,9 +196,11 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
     if (formData.industry) completed++;
     if (formData.businessContactNumber) completed++;
     if (formData.whatsappNumber) completed++;
-    if (formData.linkedIn) completed++;
-    if (formData.instagram || formData.twitter) completed++;
+    if (formData.facebookPage) completed++;
+    if (formData.instagramHandle) completed++;
+    if (formData.linkedinHandle) completed++;
     if (formData.meetingLink) completed++;
+    if (formData.companyBrochure) completed++;
     
     return Math.round((completed / total) * 100);
   };
@@ -401,16 +406,17 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
               </>
             )}
 
-            {/* Step 3: Communication Details */}
+            {/* Step 3: Communication & Branding */}
             {currentStep === 2 && (
               <>
                 <div className="mb-4 p-3 bg-blue-500/20 rounded-lg border border-blue-400/30">
                   <p className="text-blue-200 text-sm">
-                    ℹ️ All fields are optional. You can complete these later in Profile Settings.
+                    ℹ️ All fields are optional. Complete these to boost your credibility and make it easier for leads to connect with you.
                   </p>
                 </div>
 
                 <div className="space-y-4">
+                  {/* Core Communication Fields */}
                   <div className="space-y-2">
                     <Label htmlFor="whatsappNumber" className="text-white/90">WhatsApp Business Number</Label>
                     <Input
@@ -445,28 +451,60 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
                     <p className="text-white/50 text-xs">Google Meet, Zoom, or Calendly link</p>
                   </div>
 
-                  <div className="space-y-3">
-                    <Label className="text-white/90">Social Handles (Optional)</Label>
-                    <div className="space-y-2">
-                      <Input
-                        placeholder="LinkedIn profile URL"
-                        value={formData.linkedIn}
-                        onChange={(e) => handleInputChange('linkedIn', e.target.value)}
-                        className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
-                      />
-                      <Input
-                        placeholder="Instagram handle"
-                        value={formData.instagram}
-                        onChange={(e) => handleInputChange('instagram', e.target.value)}
-                        className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
-                      />
-                      <Input
-                        placeholder="X (Twitter) handle"
-                        value={formData.twitter}
-                        onChange={(e) => handleInputChange('twitter', e.target.value)}
-                        className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
-                      />
-                    </div>
+                  {/* Expandable More Details Section */}
+                  <div className="pt-2">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => setShowMoreDetails(!showMoreDetails)}
+                      className="w-full text-white/80 hover:text-white hover:bg-white/10 justify-between"
+                    >
+                      Add More Details (Social & Branding)
+                      {showMoreDetails ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                    </Button>
+                    
+                    {showMoreDetails && (
+                      <div className="mt-4 space-y-4 p-4 bg-white/5 rounded-lg border border-white/10">
+                        <div className="space-y-3">
+                          <Label className="text-white/90">Social Media Presence</Label>
+                          <div className="space-y-2">
+                            <Input
+                              placeholder="Facebook Business Page URL"
+                              value={formData.facebookPage}
+                              onChange={(e) => handleInputChange('facebookPage', e.target.value)}
+                              className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
+                            />
+                            <Input
+                              placeholder="Instagram handle (@yourcompany)"
+                              value={formData.instagramHandle}
+                              onChange={(e) => handleInputChange('instagramHandle', e.target.value)}
+                              className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
+                            />
+                            <Input
+                              placeholder="LinkedIn profile or company page URL"
+                              value={formData.linkedinHandle}
+                              onChange={(e) => handleInputChange('linkedinHandle', e.target.value)}
+                              className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="companyBrochure" className="text-white/90">Company Brochure</Label>
+                          <div className="flex items-center space-x-3">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              className="bg-white/10 border-white/30 text-white hover:bg-white/20"
+                            >
+                              <Upload className="w-4 h-4 mr-2" />
+                              Upload Brochure
+                            </Button>
+                            <span className="text-white/60 text-xs">PDF, JPG, PNG up to 5MB</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </>
