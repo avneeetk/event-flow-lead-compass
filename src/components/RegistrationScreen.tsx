@@ -69,12 +69,21 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
   const validateStep1 = () => {
     const errors: string[] = [];
     
-    if (!formData.email.trim()) errors.push("Email address is required");
-    if (!formData.email.includes('@')) errors.push("Please enter a valid email address");
-    if (!formData.password) errors.push("Password is required");
-    if (!formData.confirmPassword) errors.push("Please confirm your password");
-    if (formData.password && formData.password.length < 6) errors.push("Password must be at least 6 characters");
-    if (formData.password && formData.confirmPassword && formData.password !== formData.confirmPassword) {
+    if (!formData.email.trim()) {
+      errors.push("Email address is required");
+    } else if (!formData.email.includes('@') || !formData.email.includes('.')) {
+      errors.push("Please enter a valid email address");
+    }
+    
+    if (!formData.password) {
+      errors.push("Password is required");
+    } else if (formData.password.length < 6) {
+      errors.push("Password must be at least 6 characters");
+    }
+    
+    if (!formData.confirmPassword) {
+      errors.push("Please confirm your password");
+    } else if (formData.password && formData.confirmPassword && formData.password !== formData.confirmPassword) {
       errors.push("Passwords don't match");
     }
     
@@ -83,11 +92,13 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
   };
 
   const isStep1Valid = () => {
-    const requiredValid = formData.email && formData.password && formData.confirmPassword;
-    const passwordMatch = formData.password === formData.confirmPassword;
-    const passwordLength = formData.password.length >= 6;
-    const validEmail = formData.email.includes('@');
-    return requiredValid && passwordMatch && passwordLength && validEmail;
+    const hasEmail = formData.email.trim().length > 0;
+    const hasValidEmail = formData.email.includes('@') && formData.email.includes('.');
+    const hasPassword = formData.password.length >= 6;
+    const hasConfirmPassword = formData.confirmPassword.length > 0;
+    const passwordsMatch = formData.password === formData.confirmPassword;
+    
+    return hasEmail && hasValidEmail && hasPassword && hasConfirmPassword && passwordsMatch;
   };
 
   const nextStep = () => {
@@ -109,10 +120,6 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
       profileCompleteness: calculateProfileCompleteness()
     };
 
-    toast({
-      title: "🎉 Your profile is ready – Start capturing leads now!",
-      description: "Welcome to WOW Circle. Your 14-day free trial has started.",
-    });
     onComplete(userData);
   };
 
@@ -324,7 +331,7 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
               <Button
                 onClick={nextStep}
                 disabled={currentStep === 0 && !isStep1Valid()}
-                className="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-900 hover:from-cyan-300 hover:to-blue-400 font-semibold py-6 text-lg"
+                className="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-900 hover:from-cyan-300 hover:to-blue-400 font-semibold py-6 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {currentStep === 0 ? "Next" : "Continue to Dashboard"}
               </Button>
