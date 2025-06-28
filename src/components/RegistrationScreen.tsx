@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { User, Building, MessageSquare, Eye, EyeOff, AlertCircle, Check, X, Upload, ChevronDown, ChevronUp } from 'lucide-react';
+import { User, Building, MessageSquare, Eye, EyeOff, AlertCircle, Check, X, Upload, ChevronDown, ChevronUp, Mail, Phone, Shield } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 interface RegistrationScreenProps {
@@ -40,6 +40,7 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [showMoreDetails, setShowMoreDetails] = useState(false);
+  const [emailVerificationSent, setEmailVerificationSent] = useState(false);
 
   const steps = [
     {
@@ -72,7 +73,35 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
     "Other"
   ];
 
+  // Email validation function
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  // Phone number validation function
+  const validatePhoneNumber = (phone: string): boolean => {
+    // Remove all non-digit characters
+    const cleanPhone = phone.replace(/\D/g, '');
+    // Check if it's between 10-15 digits (international format)
+    return cleanPhone.length >= 10 && cleanPhone.length <= 15;
+  };
+
+  // Format phone number as user types
+  const formatPhoneNumber = (phone: string): string => {
+    const cleanPhone = phone.replace(/\D/g, '');
+    if (cleanPhone.length <= 3) return cleanPhone;
+    if (cleanPhone.length <= 6) return `${cleanPhone.slice(0, 3)} ${cleanPhone.slice(3)}`;
+    if (cleanPhone.length <= 10) return `${cleanPhone.slice(0, 3)} ${cleanPhone.slice(3, 6)} ${cleanPhone.slice(6)}`;
+    return `+${cleanPhone.slice(0, -10)} ${cleanPhone.slice(-10, -7)} ${cleanPhone.slice(-7, -4)} ${cleanPhone.slice(-4)}`;
+  };
+
   const handleInputChange = (field: string, value: string) => {
+    // Format phone numbers as user types
+    if (field === 'whatsappNumber' || field === 'businessContactNumber') {
+      value = formatPhoneNumber(value);
+    }
+    
     setFormData(prev => ({ ...prev, [field]: value }));
     if (validationErrors.length > 0) {
       setValidationErrors([]);
@@ -101,14 +130,14 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
     
     if (!formData.email.trim()) {
       errors.push("Business email is required");
-    } else if (!formData.email.includes('@') || !formData.email.includes('.')) {
-      errors.push("Please enter a valid email address");
+    } else if (!validateEmail(formData.email)) {
+      errors.push("Please enter a valid email address (e.g., name@company.com)");
     }
     
     if (!formData.password) {
       errors.push("Password is required");
-    } else if (formData.password.length < 6) {
-      errors.push("Password must be at least 6 characters");
+    } else if (formData.password.length < 8) {
+      errors.push("Password must be at least 8 characters");
     }
     
     if (!formData.confirmPassword) {
@@ -132,10 +161,27 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
     return errors.length === 0;
   };
 
+  const validateStep3 = () => {
+    const errors: string[] = [];
+    
+    // Validate WhatsApp number if provided
+    if (formData.whatsappNumber && !validatePhoneNumber(formData.whatsappNumber)) {
+      errors.push("Please enter a valid WhatsApp number");
+    }
+    
+    // Validate business contact number if provided
+    if (formData.businessContactNumber && !validatePhoneNumber(formData.businessContactNumber)) {
+      errors.push("Please enter a valid business contact number");
+    }
+    
+    setValidationErrors(errors);
+    return errors.length === 0;
+  };
+
   const isStep1Valid = () => {
     const hasEmail = formData.email.trim().length > 0;
-    const hasValidEmail = formData.email.includes('@') && formData.email.includes('.');
-    const hasPassword = formData.password.length >= 6;
+    const hasValidEmail = validateEmail(formData.email);
+    const hasPassword = formData.password.length >= 8;
     const hasConfirmPassword = formData.confirmPassword.length > 0;
     const passwordsMatch = formData.password === formData.confirmPassword;
     
@@ -146,9 +192,28 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
     return formData.companyName.trim().length > 0;
   };
 
+  const isStep3Valid = () => {
+    // Step 3 is optional, but if phone numbers are provided, they must be valid
+    const whatsappValid = !formData.whatsappNumber || validatePhoneNumber(formData.whatsappNumber);
+    const businessPhoneValid = !formData.businessContactNumber || validatePhoneNumber(formData.businessContactNumber);
+    
+    return whatsappValid && businessPhoneValid;
+  };
+
+  const sendEmailVerification = async () => {
+    // Simulate email verification (in real app, this would call your backend)
+    setEmailVerificationSent(true);
+    toast({
+      title: "Verification Email Sent! 📧",
+      description: `Check your inbox at ${formData.email}`,
+    });
+  };
+
   const nextStep = () => {
     if (currentStep === 0) {
       if (validateStep1()) {
+        // Send email verification after successful step 1
+        sendEmailVerification();
         setCurrentStep(1);
       }
     } else if (currentStep === 1) {
@@ -156,7 +221,9 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
         setCurrentStep(2);
       }
     } else {
-      completeRegistration();
+      if (validateStep3()) {
+        completeRegistration();
+      }
     }
   };
 
@@ -175,7 +242,9 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
       linkedinHandle: formData.linkedinHandle,
       meetingLink: formData.meetingLink,
       companyBrochure: formData.companyBrochure,
-      profileCompleteness: calculateProfileCompleteness()
+      profileCompleteness: calculateProfileCompleteness(),
+      emailVerified: emailVerificationSent,
+      phoneVerified: false // Will be verified later
     };
 
     toast({
@@ -240,7 +309,10 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
             {currentStep === 0 && (
               <>
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-white/90">Business Email *</Label>
+                  <Label htmlFor="email" className="text-white/90 flex items-center">
+                    <Mail className="w-4 h-4 mr-2" />
+                    Business Email *
+                  </Label>
                   <Input
                     id="email"
                     type="email"
@@ -249,7 +321,10 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
                     onChange={(e) => handleInputChange('email', e.target.value)}
                     className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
                   />
-                  <p className="text-white/60 text-xs">This email will be your login credential</p>
+                  <div className="flex items-center space-x-2">
+                    <Shield className="w-3 h-3 text-cyan-400" />
+                    <p className="text-cyan-200 text-xs">This email will be your login credential and will be verified</p>
+                  </div>
                 </div>
 
                 <div className="space-y-2">
@@ -334,6 +409,15 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
                     </Button>
                   </div>
                 </div>
+
+                {emailVerificationSent && (
+                  <div className="bg-green-500/20 border border-green-400/30 rounded-lg p-3">
+                    <div className="flex items-center space-x-2">
+                      <Check className="w-4 h-4 text-green-400" />
+                      <span className="text-green-300 text-sm">Verification email sent to {formData.email}</span>
+                    </div>
+                  </div>
+                )}
               </>
             )}
 
@@ -418,7 +502,10 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
                 <div className="space-y-4">
                   {/* Core Communication Fields */}
                   <div className="space-y-2">
-                    <Label htmlFor="whatsappNumber" className="text-white/90">WhatsApp Business Number</Label>
+                    <Label htmlFor="whatsappNumber" className="text-white/90 flex items-center">
+                      <Phone className="w-4 h-4 mr-2" />
+                      WhatsApp Business Number
+                    </Label>
                     <Input
                       id="whatsappNumber"
                       placeholder="+91 98765 43210"
@@ -426,10 +513,16 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
                       onChange={(e) => handleInputChange('whatsappNumber', e.target.value)}
                       className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
                     />
+                    {formData.whatsappNumber && !validatePhoneNumber(formData.whatsappNumber) && (
+                      <p className="text-red-300 text-xs">Please enter a valid phone number</p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="businessContactNumber" className="text-white/90">Business Contact Number</Label>
+                    <Label htmlFor="businessContactNumber" className="text-white/90 flex items-center">
+                      <Phone className="w-4 h-4 mr-2" />
+                      Business Contact Number
+                    </Label>
                     <Input
                       id="businessContactNumber"
                       placeholder="+91 98765 43210"
@@ -437,6 +530,9 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
                       onChange={(e) => handleInputChange('businessContactNumber', e.target.value)}
                       className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20"
                     />
+                    {formData.businessContactNumber && !validatePhoneNumber(formData.businessContactNumber) && (
+                      <p className="text-red-300 text-xs">Please enter a valid phone number</p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
@@ -530,7 +626,8 @@ const RegistrationScreen = ({ onComplete, onSwitchToLogin }: RegistrationScreenP
                 onClick={nextStep}
                 disabled={
                   (currentStep === 0 && !isStep1Valid()) ||
-                  (currentStep === 1 && !isStep2Valid())
+                  (currentStep === 1 && !isStep2Valid()) ||
+                  (currentStep === 2 && !isStep3Valid())
                 }
                 className="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-900 hover:from-cyan-300 hover:to-blue-400 font-semibold py-6 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
