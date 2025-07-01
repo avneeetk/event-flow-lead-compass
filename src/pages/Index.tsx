@@ -8,8 +8,12 @@ import FollowUpAssistant from '../components/FollowUpAssistant';
 import ROIDashboard from '../components/ROIDashboard';
 import TeamCollaboration from '../components/TeamCollaboration';
 import AccountSettings from '../components/AccountSettings';
+import WalletScreen from '../components/WalletScreen';
 import BottomNavigation from '../components/BottomNavigation';
 import SupportChat from '../components/SupportChat';
+import WowCoinIndicator from '../components/WowCoinIndicator';
+import EngagementCards from '../components/EngagementCards';
+import { WowCoinProvider } from '../contexts/WowCoinContext';
 import { Toaster } from '@/components/ui/toaster';
 import { toast } from '@/hooks/use-toast';
 import { Coins } from 'lucide-react';
@@ -22,7 +26,6 @@ const Index = () => {
   const [isEventModeActive, setIsEventModeActive] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [isGuestMode, setIsGuestMode] = useState(false);
-  const [coinBalance, setCoinBalance] = useState(150);
   const [userProfileData, setUserProfileData] = useState<any>(null);
 
   useEffect(() => {
@@ -65,7 +68,6 @@ const Index = () => {
     setUserProfileData(userData);
     
     // Welcome new users with coins
-    setCoinBalance(200);
     toast({
       title: "🎉 Your profile is ready – Start capturing leads now!",
       description: "Welcome to WOW Circle. Your 14-day free trial has started.",
@@ -105,7 +107,6 @@ const Index = () => {
       title: "Free Trial Started! 🎉",
       description: "You now have access to all Pro features for 14 days.",
     });
-    setCoinBalance(500); // Give trial users more coins
   };
 
   // Handle auth flow
@@ -137,10 +138,9 @@ const Index = () => {
       case 'capture':
         return (
           <>
-            <OnboardingCards 
+            <EngagementCards 
               profileCompleteness={userProfileData?.profileCompleteness || 20}
               onCompleteProfile={handleCompleteProfile}
-              onStartTrial={handleStartTrial}
             />
             <LeadCaptureScreen isEventModeActive={isEventModeActive} />
           </>
@@ -155,13 +155,14 @@ const Index = () => {
         return <TeamCollaboration />;
       case 'account':
         return <AccountSettings />;
+      case 'wallet':
+        return <WalletScreen />;
       default:
         return (
           <>
-            <OnboardingCards 
+            <EngagementCards 
               profileCompleteness={userProfileData?.profileCompleteness || 20}
               onCompleteProfile={handleCompleteProfile}
-              onStartTrial={handleStartTrial}
             />
             <LeadCaptureScreen isEventModeActive={isEventModeActive} />
           </>
@@ -170,37 +171,36 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="max-w-md mx-auto bg-white min-h-screen shadow-xl relative">
-        {/* Header with Coin Balance */}
-        <div className="flex justify-between items-center p-4 bg-white border-b">
-          <div className="text-lg font-semibold text-gray-800">WOW Circle</div>
-          <div className="flex items-center space-x-2">
-            <Coins className="w-4 h-4 text-yellow-600" />
-            <span className="text-sm font-medium text-gray-700">{coinBalance}</span>
+    <WowCoinProvider>
+      <div className="min-h-screen bg-slate-50">
+        <div className="max-w-md mx-auto bg-white min-h-screen shadow-xl relative">
+          {/* Header with WowCoin Indicator */}
+          <div className="flex justify-between items-center p-4 bg-white border-b">
+            <div className="text-lg font-semibold text-gray-800">WOW Circle</div>
+            <WowCoinIndicator />
           </div>
-        </div>
 
-        {/* Event Mode Banner */}
-        {isEventModeActive && (
-          <div className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white text-center py-2 text-sm font-medium">
-            🟢 Event Mode Active - 12 days left in free trial
-          </div>
-        )}
-        
-        {/* Guest Mode Banner */}
-        {isGuestMode && !isEventModeActive && (
-          <div className="bg-gradient-to-r from-orange-500 to-red-600 text-white text-center py-2 text-sm font-medium">
-            👤 Guest Mode - 12 days free trial remaining
-          </div>
-        )}
-        
-        {renderCurrentView()}
-        <BottomNavigation currentView={currentView} onViewChange={setCurrentView} />
-        <SupportChat />
+          {/* Event Mode Banner */}
+          {isEventModeActive && (
+            <div className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white text-center py-2 text-sm font-medium">
+              🟢 Event Mode Active - 12 days left in free trial
+            </div>
+          )}
+          
+          {/* Guest Mode Banner */}
+          {isGuestMode && !isEventModeActive && (
+            <div className="bg-gradient-to-r from-orange-500 to-red-600 text-white text-center py-2 text-sm font-medium">
+              👤 Guest Mode - 12 days free trial remaining
+            </div>
+          )}
+          
+          {renderCurrentView()}
+          <BottomNavigation currentView={currentView} onViewChange={setCurrentView} />
+          <SupportChat />
+        </div>
+        <Toaster />
       </div>
-      <Toaster />
-    </div>
+    </WowCoinProvider>
   );
 };
 
