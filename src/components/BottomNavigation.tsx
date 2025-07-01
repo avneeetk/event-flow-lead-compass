@@ -1,5 +1,6 @@
 
-import { Home, Users, MessageSquare, BarChart3, Settings, Wallet } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Camera, Users, MessageSquare, BarChart3, User } from 'lucide-react';
 
 interface BottomNavigationProps {
   currentView: string;
@@ -8,12 +9,11 @@ interface BottomNavigationProps {
 
 const BottomNavigation = ({ currentView, onViewChange }: BottomNavigationProps) => {
   const navItems = [
-    { id: 'capture', icon: Home, label: 'Capture' },
-    { id: 'contacts', icon: Users, label: 'Contacts' },
-    { id: 'followup', icon: MessageSquare, label: 'Follow-up' },
-    { id: 'roi', icon: BarChart3, label: 'Analytics' },
-    { id: 'team', icon: Settings, label: 'Team' },
-    { id: 'wallet', icon: Wallet, label: 'Wallet' }
+    { id: 'capture', label: 'Capture', icon: Camera },
+    { id: 'contacts', label: 'Contacts', icon: Users },
+    { id: 'followup', label: 'Follow-up', icon: MessageSquare },
+    { id: 'roi', label: 'ROI', icon: BarChart3 },
+    { id: 'account', label: 'Account', icon: User }
   ];
 
   return (
@@ -24,18 +24,20 @@ const BottomNavigation = ({ currentView, onViewChange }: BottomNavigationProps) 
           const isActive = currentView === item.id;
           
           return (
-            <button
+            <Button
               key={item.id}
+              variant="ghost"
+              size="sm"
               onClick={() => onViewChange(item.id)}
-              className={`flex flex-col items-center space-y-1 px-2 py-2 rounded-lg transition-colors ${
+              className={`flex flex-col items-center space-y-1 px-2 py-3 rounded-lg transition-colors ${
                 isActive 
-                  ? 'text-blue-600 bg-blue-50' 
-                  : 'text-gray-500 hover:text-gray-700'
+                  ? 'bg-blue-50 text-blue-600' 
+                  : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
               }`}
             >
               <Icon className="w-5 h-5" />
               <span className="text-xs font-medium">{item.label}</span>
-            </button>
+            </Button>
           );
         })}
       </div>

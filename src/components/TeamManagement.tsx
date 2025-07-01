@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -9,7 +10,6 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { User, UserPlus, Settings, Trash2, Edit, Shield, Eye } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import LockedFeature from './LockedFeature';
 
 const TeamManagement = () => {
   const [teamMembers, setTeamMembers] = useState([
@@ -49,23 +49,7 @@ const TeamManagement = () => {
     role: 'Field Rep'
   });
 
-  const maxTeamMembers = 2; // Business Builder limit
-
   const handleAddMember = () => {
-    if (teamMembers.length >= maxTeamMembers) {
-      toast({
-        title: "Team Limit Reached",
-        description: `Your plan allows ${maxTeamMembers} team members. Upgrade to Enterprise for unlimited team members.`,
-        variant: "destructive",
-        action: (
-          <Button size="sm" variant="outline">
-            Upgrade
-          </Button>
-        )
-      });
-      return;
-    }
-
     if (!newMember.name || !newMember.email) {
       toast({
         title: "Missing Information",
@@ -161,9 +145,6 @@ const TeamManagement = () => {
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-800 mb-2">Team Management</h1>
         <p className="text-gray-600">Manage your team members and permissions</p>
-        <Badge variant="outline" className="mt-2">
-          Business Builder: {teamMembers.length}/{maxTeamMembers} members
-        </Badge>
       </div>
 
       {/* Team Summary */}
@@ -186,71 +167,58 @@ const TeamManagement = () => {
         </CardContent>
       </Card>
 
-      {/* Add Member Button - Show locked state when at limit */}
+      {/* Add Member Button */}
       <div className="mb-6">
-        {teamMembers.length >= maxTeamMembers ? (
-          <LockedFeature 
-            feature="Add 3rd+ Team Member" 
-            planRequired="Enterprise"
-            className="w-full"
-          >
-            <Button className="w-full h-12 bg-gradient-to-r from-blue-600 to-purple-600" disabled>
+        <Dialog open={isAddMemberOpen} onOpenChange={setIsAddMemberOpen}>
+          <DialogTrigger asChild>
+            <Button className="w-full h-12 bg-gradient-to-r from-blue-600 to-purple-600">
               <UserPlus className="w-4 h-4 mr-2" />
-              Add Team Member (Limit Reached)
+              Add Team Member
             </Button>
-          </LockedFeature>
-        ) : (
-          <Dialog open={isAddMemberOpen} onOpenChange={setIsAddMemberOpen}>
-            <DialogTrigger asChild>
-              <Button className="w-full h-12 bg-gradient-to-r from-blue-600 to-purple-600">
-                <UserPlus className="w-4 h-4 mr-2" />
-                Add Team Member ({teamMembers.length}/{maxTeamMembers})
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Add New Team Member</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="memberName">Full Name</Label>
-                  <Input
-                    id="memberName"
-                    placeholder="Enter team member's name"
-                    value={newMember.name}
-                    onChange={(e) => setNewMember({ ...newMember, name: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="memberEmail">Email Address</Label>
-                  <Input
-                    id="memberEmail"
-                    type="email"
-                    placeholder="Enter email address"
-                    value={newMember.email}
-                    onChange={(e) => setNewMember({ ...newMember, email: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="memberRole">Role</Label>
-                  <Select value={newMember.role} onValueChange={(value) => setNewMember({ ...newMember, role: value })}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Admin">Admin</SelectItem>
-                      <SelectItem value="Field Rep">Field Rep</SelectItem>
-                      <SelectItem value="Viewer">Viewer</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <Button onClick={handleAddMember} className="w-full">
-                  Add Member
-                </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add New Team Member</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="memberName">Full Name</Label>
+                <Input
+                  id="memberName"
+                  placeholder="Enter team member's name"
+                  value={newMember.name}
+                  onChange={(e) => setNewMember({ ...newMember, name: e.target.value })}
+                />
               </div>
-            </DialogContent>
-          </Dialog>
-        )}
+              <div className="space-y-2">
+                <Label htmlFor="memberEmail">Email Address</Label>
+                <Input
+                  id="memberEmail"
+                  type="email"
+                  placeholder="Enter email address"
+                  value={newMember.email}
+                  onChange={(e) => setNewMember({ ...newMember, email: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="memberRole">Role</Label>
+                <Select value={newMember.role} onValueChange={(value) => setNewMember({ ...newMember, role: value })}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Admin">Admin</SelectItem>
+                    <SelectItem value="Field Rep">Field Rep</SelectItem>
+                    <SelectItem value="Viewer">Viewer</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button onClick={handleAddMember} className="w-full">
+                Add Member
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Team Members List */}
@@ -315,36 +283,6 @@ const TeamManagement = () => {
           </Card>
         ))}
       </div>
-
-      {/* Locked Advanced Analytics */}
-      <LockedFeature 
-        feature="Team ROI Breakdown" 
-        planRequired="Enterprise"
-        className="mt-6"
-      >
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Advanced Team Analytics</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="bg-gray-100 p-4 rounded">
-                <h4 className="font-semibold mb-2">Team ROI Breakdown</h4>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span>Sarah Varma</span>
-                    <span>$15,400 revenue</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Rajesh Kumar</span>
-                    <span>$12,800 revenue</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </LockedFeature>
 
       {/* Role Permissions Info */}
       <Card className="mt-6">
